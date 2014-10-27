@@ -5,8 +5,17 @@ import numpy as np
 import os
 import sys
 
-realmlist = read_csv('../sourceFile/topPop_10.csv')
-itemlist = read_csv('../sourceFile/itemlist.csv')
+working_dir = '../workingFile/'
+source_dir = '../sourceFile/'
+
+## comment these three lines if use the data in local computer
+usb_mode = '/Volumes/TOSHIBA/'
+working_dir = usb_mode + working_dir[3:]
+source_dir = usb_mode + source_dir[3:]
+
+itemlist = read_csv(source_dir+'itemlist.csv')
+pop_dir = source_dir + 'population/'
+description = '_horde_0401-0414'
 
 qualitylist = ['Poor', 'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Heirloom']
 qualityIDlist = [0, 1, 2, 3, 4, 5, 7]
@@ -14,10 +23,6 @@ classlist = ['Consumable', 'Container', 'Weapon', 'Gem', 'Armor', 'Projectile', 
 classIDlist = [0, 1, 2, 3, 4, 6, 7, 9, 10, 12, 13, 15, 16, 17]
 fractionlist = ['_alliance', '_horde']
 
-working_dir = '../workingFile/'
-source_dir = '../sourceFile/'
-pop_dir = source_dir + 'population/'
-description = '_horde_0401-0414'
 '''
   Workflow:
     1)  read csv file
@@ -94,6 +99,8 @@ def preprocessData(realm, target_field, date='0401-0414', threshold=2):
       df.to_csv(source_path + 'timeSeries/p_' + auction_name + '.csv')
     elif target_field == 'AH_Quantity':  
       df.to_csv(source_path + 'timeSeries/q_' + auction_name + '.csv')
+    else:
+      print 'No target field matched.'
 
 # try do analysis data before/after connected, 
 # also try to merge with subclassname

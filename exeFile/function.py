@@ -11,9 +11,16 @@ fields_name = 'Realm Name,Export Time,PMktPrice Date,Reserved,Item ID,Item Name,
 fields_name = fields_name.replace(' ', '_')
 
 source_dir = '../sourceFile/'
+working_dir = '../workingFile/'
+
+###
+usb_mode = '/Volumes/TOSHIBA/'
+source_dir = usb_mode + source_dir[3:]
+working_dir = usb_mode + working_dir[3:]
+###
+
 auction_dir = source_dir + 'auctionData/'
 csv_dir = source_dir + 'csvFile/'
-working_dir = '../workingFile/'
 
 if not os.path.isdir(working_dir):
   os.makedirs(working_dir)
