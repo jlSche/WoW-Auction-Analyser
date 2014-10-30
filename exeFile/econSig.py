@@ -44,12 +44,14 @@ def convertDateFormat(val):
 def getWeekNumber(val):
   return val.isocalendar()[1]
 
-# Delete auction data which amount of item is zero. Return field is remain_field
-def deleteUselessData(auction, remain_fields=['PMktPrice_Date', 'Item_ID', 'AH_MarketPrice']):
+# Delete auction data which amount of item is zero or NaN . Return field is remain_field
+def deleteUselessData(auction, remain_fields=['PMktPrice_Date', 'Item_ID', 'AH_MarketPrice', 'AH_Quantity']):
   auction = auction[auction['AH_Quantity'] != 0]
   auction = auction[auction['AH_MarketPrice'] != 0]  
+  #auction = auction[auction['AH_MarketPrice'].notnull()]
+  #auction = auction[auction['Profit'] != 0]
   '''
-    This 2 lines may cause some problems.
+  Will the first 2 lines may cause some problems?
   '''
   return auction.ix[:, remain_fields]
 
@@ -78,32 +80,47 @@ def normalize(data, max_min_value, on_field):
     data[field] = data[field].apply(normalizeFunction, args=(max_min_value[0], max_min_value[1]))
   return data
 
-def preprocessData(realm, target_field, date='0401-0414', threshold=2):
+
+def process(realm_list, fraction='_alliance', date='0401-0414', threshold=2):
+  source_path = working_dir + date + '/timeSeires/'
+  pieces = []
+  for realm in realm_list:
+    auction_name = realm + fraction
+    print 'processing', target_field, 'of', auction_name
+    auction = read_csv(source_path + auction_name + '.csv')
+    auction['Profit'] = getMeanProfit(auction)
+    pieces.append(auction)
+  
+  return concat(pieces, ignore_index=True)
+
+
+# Use this function to look into 'AH_Quantity' and 'AH_MarketPrice' field.
+# Read the csv file first, first apply "deleteUselessData", take mean of the targe_field.
+# The return dataframe will contain (item id, mean of targe field)
+def preprocessData(realm, date='0401-0414', threshold=2):
   source_path = working_dir + date + '/'
-  remain_fields = (['PMktPrice_Date', 'Item_ID'])
-  remain_fields.append(target_field)
-  if not os.path.isdir(source_path + 'timeSeries/'):
-    os.makedirs(source_path + 'timeSeries')
+  target_path = source_path + 'afterPreprocess/'
+
+  if not os.path.isdir(target_path):
+    os.makedirs(target_path)
   for fraction in fractionlist:
     auction_name = realm + fraction
-    print 'preprocessing', target_field, 'of', auction_name
+    print 'preprocessing',  auction_name
     auction = read_csv(source_path + auction_name + '.csv')
-    df = deleteUselessData(auction, remain_fields)
-    if target_field == 'AH_MarketPrice':
-      df = removeOutliers(df, threshold)
-    df = df.pivot(remain_fields[0], remain_fields[1], remain_fields[2])
-    df = DataFrame(df.mean()) # this line mean the same item within given time range
-    df.columns = [target_field]
+    df = deleteUselessData(auction)
+    df = removeOutliers(df, threshold)
+    '''
+    #df['Profit'] = df['AH_MarketPrice'] * df['AH_Quantity']
+    #df
 
-    if target_field == 'AH_MarketPrice':
-      df.to_csv(source_path + 'timeSeries/p_' + auction_name + '.csv')
-    elif target_field == 'AH_Quantity':  
-      df.to_csv(source_path + 'timeSeries/q_' + auction_name + '.csv')
-    else:
-      print 'No target field matched.'
+    #df = df.pivot(remain_fields[0], remain_fields[1], remain_fields[2])
+    #df = DataFrame(df.mean()) # this line mean the same item within given time range
+    #df.columns = [target_field]
+    '''
+    df.to_csv(target_path + auction_name + '.csv',index=False)
 
-# try do analysis data before/after connected, 
-# also try to merge with subclassname
+# Merge with the merge_with field first, take sum after you group data by merge_with field
+# Return the normalized datafram. The return value can be used to plot  
 def analyseData(realm, target_field='AH_Quantity', merge_with='classname', date='0401-0414'):
   source_path = working_dir + date + '/timeSeries/'
   for fraction in fractionlist:
@@ -124,6 +141,16 @@ def analyseData(realm, target_field='AH_Quantity', merge_with='classname', date=
     return normalize(df, getMaxAndMinValue(df, target_field), [target_field]) 
 ###############################################################################################################
 
+# Get the mean profit of the auction
+# Calculate the p*q of every item in each day, sum them up, andthen take mean value.
+def getMeanProfit(auction):
+  auction['Profit'] = auction['AH_MarketPrice'] * auction['AH_Quantity']
+  grouped = auction.groupby(['PMktPrice_Date'], as_index=False).sum()
+  return grouped['Profit'].mean()
+
+def getMeanFieldOfEachItem(auction, field='AH_Quantity'):
+  df = auction.groupby(['Item_ID'], as_index=False).mean()
+  return df['Item_ID', field]
 
 def getSum(auction, group_by='classname'):
   auction = auction.groupby([group_by], as_index=False).sum()
@@ -221,6 +248,7 @@ def generateWorkingData(realm_name, start_date, end_date):
   collectRealmData(realm_name)
   createCopyOfCSV(realm_name)
   mergeSameAuction(realm_name, start_date, end_date)
+  
   print 'Finished generating working data.\n'
 
 def plotAuctionSignature(realmlist, fraction, start_date, end_date):

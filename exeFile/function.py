@@ -27,6 +27,9 @@ if not os.path.isdir(working_dir):
 
 # auctionData directory collect all time range of an auction together, stills in dat format
 # csvFile will store same data as auctionData Directory, but in csv format
+# workingFile stores realm data that combine ALL time range into one,
+#   and the sub directory of workingFile store realm data in specified time range.
+#   You should use the sub directory of each time range (afterPreprocess) to do analysis
 
 '''
  Collect realm data that distribute in different date file into sourceFile/auctionData directory.
