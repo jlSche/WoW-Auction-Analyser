@@ -13,11 +13,10 @@ fields_name = fields_name.replace(' ', '_')
 source_dir = '../sourceFile/'
 working_dir = '../workingFile/'
 
-###
+# comment three lines below if the data are in local computer
 usb_mode = '/Volumes/TOSHIBA/'
 source_dir = usb_mode + source_dir[3:]
 working_dir = usb_mode + working_dir[3:]
-###
 
 auction_dir = source_dir + 'auctionData/'
 csv_dir = source_dir + 'csvFile/'
@@ -25,21 +24,25 @@ csv_dir = source_dir + 'csvFile/'
 if not os.path.isdir(working_dir):
   os.makedirs(working_dir)
 
+#########################################################################################################
 # auctionData directory collect all time range of an auction together, stills in dat format
+#
 # csvFile will store same data as auctionData Directory, but in csv format
+#
 # workingFile stores realm data that combine ALL time range into one,
 #   and the sub directory of workingFile store realm data in specified time range.
 #   You should use the sub directory of each time range (afterPreprocess) to do analysis
+#########################################################################################################
 
-'''
- Collect realm data that distribute in different date file into sourceFile/auctionData directory.
- Noted that this function will only gather filename that is *02.dat.
 
- ### This Function should be run again if the dataset is extended.
-
- paraneters: (realm)
-'''
-
+#########################################################################################################
+# Collect realm data that distribute in different date file into sourceFile/auctionData directory.
+# Noted that this function will only gather filename that is *02.dat.
+#
+### This Function should be run again if the dataset is extended.
+#
+# paraneters: (realm)
+#########################################################################################################
 def collectRealmData(realm):
   for date in collectedDate_list:
     for fraction in fractionlist:
@@ -60,11 +63,10 @@ def collectRealmData(realm):
         print  cmd_copy
 
 
-'''
- Copy files in auctionData directory into csvFile with correct csv format.
- 
- parameters: (realm)
-'''
+#########################################################################################################
+# Copy files in auctionData directory into csvFile with correct csv format. 
+# parameters: (realm)
+#########################################################################################################
 def createCopyOfCSV(realm): 
   for fraction in fractionlist:
     auction = realm + fraction
@@ -89,13 +91,11 @@ def createCopyOfCSV(realm):
         f_write.close()
 
 
-'''
- Read auction data in given time range from (/sourceFile/csv/auction) and then combine all of them into a big file.
- The final big file will be stored in (workingFile).
-
-parameters: (realm, start date, end date)
-
-'''
+#####################################################################################################################
+# Read auction data in given time range from (/sourceFile/csv/auction) and then combine all of them into a big file.
+# The final big file will be stored in (workingFile).
+# parameters: (realm, start date, end date)
+#####################################################################################################################
 def mergeSameAuction(realm, start_date, end_date):
   '''
   the method below will disturb the order of auction data.
@@ -135,10 +135,10 @@ def mergeSameAuction(realm, start_date, end_date):
     f_write.close()
 
 
-'''
- This function will return the index of collectedDate_list,
- which stand for the range you need.
-'''
+#########################################################################################################
+# This function will return the index of collectedDate_list,
+# which stand for the range you need.
+#########################################################################################################
 def getDirIdxNeeded(start_date, end_date):
   idx_start = 0  
   idx_end = 0
@@ -159,6 +159,23 @@ def getDirIdxNeeded(start_date, end_date):
       break
   return idx_start, idx_end
 
+  
+#########################################################################################################
+#########################################################################################################
+def generateWorkingData(realm_name, start_date, end_date):
+  # check if the file exis first
+  dirpath = working_dir + start_date + '-' + end_date + '/'
+  if not os.path.isdir(dirpath):
+    os.makedirs(dirpath)
+  if os.path.isfile(dirpath + realm_name+'_alliance.csv'):
+    print dirpath+realm_name+'_alliance(horde).csv is already existed.'
+    return
+  print 'Generating working data of', realm_name, '...'
+  collectRealmData(realm_name)
+  createCopyOfCSV(realm_name)
+  mergeSameAuction(realm_name, start_date, end_date)
+  
+  print 'Finished generating working data.\n'
 
 # argv1: realm name, argv2: start date, argv3: end date
 #collectRealmData(sys.argv[1])

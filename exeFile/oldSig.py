@@ -44,6 +44,7 @@ def convertDateFormat(val):
 def getWeekNumber(val):
   return val.isocalendar()[1]
 
+
 # Delete auction data which amount of item is zero or NaN . Return field is remain_field
 def deleteUselessData(auction, remain_fields=['PMktPrice_Date', 'Item_ID', 'AH_MarketPrice', 'AH_Quantity']):
   auction = auction[auction['AH_Quantity'] != 0]
