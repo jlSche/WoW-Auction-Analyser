@@ -90,6 +90,18 @@ def createCopyOfCSV(realm):
           f_write.write(row) 
         f_write.close()
 
+#####################################################################################################################
+# Read auction file in sourceFile/csvFile/auction.csv and then get rid of the unwanted columns.
+# The remaining columns will be 'PMktPrice Date', 'Item ID', 'Item Name', 'AH MarketPrice', 'AH Quantity', 'Avg DailyPosted'
+# BECAREFUL that the new generated csv file will over write the original file. 
+#####################################################################################################################
+def trimDataColumns(realm):
+  #for fraction in fractionlist:
+  auction_name = realm + '_alliance'
+  for datefile in os.listdir(csv_dir + auction_name):
+    auction = read_csv(csv_dir + auction_name + '/' + datefile)
+    auction = auction.ix[:, ['PMktPrice Date','Item ID','Item Name','AH MarketPrice','AH Quantity','Avg Daily Posted']]
+    auction.to_csv(csv_dir + auction_name + '/' + datefile, index=False)
 
 #####################################################################################################################
 # Read auction data in given time range from (/sourceFile/csv/auction) and then combine all of them into a big file.
@@ -161,6 +173,7 @@ def getDirIdxNeeded(start_date, end_date):
 
   
 #########################################################################################################
+# Execute this function to generate workingData
 #########################################################################################################
 def generateWorkingData(realm_name, start_date, end_date):
   # check if the file exis first

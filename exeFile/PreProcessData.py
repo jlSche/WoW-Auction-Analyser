@@ -30,7 +30,7 @@ if not os.path.isdir(working_dir):
 # Return columns which are given in "remain_columns" argment.
 # NOTE: Will the first 2 lines cause some problems?
 #########################################################################################################
-def removeUselessData(auction, remain_columns=['PMktPrice_Date', 'Item_ID', 'AH_MarketPrice', 'AH_Quantity']):
+def removeUselessColumns(auction, remain_columns=['PMktPrice_Date', 'Item_ID', 'AH_MarketPrice', 'AH_Quantity']):
   auction = auction[auction['AH_Quantity'] != 0]
   auction = auction[auction['AH_MarketPrice'] != 0]  
   #auction = auction[auction['AH_MarketPrice'].notnull()]
