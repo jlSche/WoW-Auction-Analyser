@@ -19,7 +19,7 @@ source_dir = usb_mode + source_dir[3:]
 working_dir = usb_mode + working_dir[3:]
 
 auction_dir = source_dir + 'auctionData/'
-csv_dir = source_dir + 'csvFile/'
+csv_dir = source_dir + 'csvFile2/'
 
 if not os.path.isdir(working_dir):
   os.makedirs(working_dir)
@@ -38,10 +38,11 @@ if not os.path.isdir(working_dir):
 #########################################################################################################
 # Collect realm data that distribute in different date file into sourceFile/auctionData directory.
 # Noted that this function will only gather filename that is *02.dat.
-#
+# And this cmd_copy copy all the diretory, not one file at a time. 
+# You can avoid copy existed files by changing the collectedDate_list.
 ### This Function should be run again if the dataset is extended.
-#
-# paraneters: (realm)
+# 
+# parameters: (realm)
 #########################################################################################################
 def collectRealmData(realm):
   for date in collectedDate_list:
@@ -61,7 +62,6 @@ def collectRealmData(realm):
         os.system(cmd_copy)
         # if next line isn't executed, it means the auction cannot be found
         print  cmd_copy
-
 
 #########################################################################################################
 # Copy files in auctionData directory into csvFile with correct csv format. 
@@ -96,12 +96,17 @@ def createCopyOfCSV(realm):
 # BECAREFUL that the new generated csv file will over write the original file. 
 #####################################################################################################################
 def trimDataColumns(realm):
-  #for fraction in fractionlist:
-  auction_name = realm + '_alliance'
-  for datefile in os.listdir(csv_dir + auction_name):
-    auction = read_csv(csv_dir + auction_name + '/' + datefile)
-    auction = auction.ix[:, ['PMktPrice Date','Item ID','Item Name','AH MarketPrice','AH Quantity','Avg Daily Posted']]
-    auction.to_csv(csv_dir + auction_name + '/' + datefile, index=False)
+  for fraction in fractionlist:
+    auction_name = realm + fraction
+    print 'Trimming', auction_name, '...'
+
+    if not os.path.isdir(source_dir + 'csvFile2/' + auction_name):
+      os.makedirs(source_dir + 'csvFile2/' + auction_name)
+    for datefile in os.listdir(csv_dir + auction_name):
+      auction = read_csv(csv_dir + auction_name + '/' + datefile)
+      auction = auction.ix[:, ['PMktPrice Date','Item ID','AH MarketPrice','AH Quantity','Avg Daily Posted']]
+      #auction.to_csv(csv_dir + auction_name + '/' + datefile, index=False)
+      auction.to_csv(source_dir + 'csvFile2/' + auction_name + '/' + datefile, index=False)
 
 #####################################################################################################################
 # Read auction data in given time range from (/sourceFile/csv/auction) and then combine all of them into a big file.
@@ -109,9 +114,24 @@ def trimDataColumns(realm):
 # parameters: (realm, start date, end date)
 #####################################################################################################################
 def mergeSameAuction(realm, start_date, end_date):
-  '''
-  the method below will disturb the order of auction data.
+  target_dir = working_dir + start_date + '-' + end_date + '/'
+  if not os.path.isdir(target_dir):
+    os.makedirs(target_dir)
 
+  for fraction in fractionlist:
+    auction_list = []
+    auction = realm + fraction
+    print 'Merging', auction, '...'
+    for csvfile in os.listdir(csv_dir + auction):
+      newData = read_csv(csv_dir + auction + '/' + csvfile)
+      auction_list.append(newData)
+
+    concated = concat(auction_list, ignore_index=True)
+    concated.to_csv(target_dir + auction + '.csv', index=False)
+  
+  
+  #the method below will disturb the order of auction data.
+  '''
   auctionData = DataFrame()
   sourcepath = '../sourceFile/auctionData/csv/'
   for fraction in fractionlist:
@@ -122,7 +142,9 @@ def mergeSameAuction(realm, start_date, end_date):
 
   auctionData.to_csv('storm') 
   '''
-  
+
+  # the second method may takes too much time.
+  '''  
   target_dir = working_dir + start_date + '-' + end_date + '/'
   if not os.path.isdir(target_dir):
     os.makedirs(target_dir)
@@ -145,6 +167,17 @@ def mergeSameAuction(realm, start_date, end_date):
         f_read.close() 
       
     f_write.close()
+    '''
+
+#########################################################################################################
+# This function concate the new file in csvFile to workingData.
+# not finished yet!
+#########################################################################################################
+def concateToExisted(realm, new_file_dir):
+  for fraction in fractionlist:
+    auction = realm + fraction
+      
+
 
 
 #########################################################################################################
