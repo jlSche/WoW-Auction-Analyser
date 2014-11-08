@@ -22,6 +22,63 @@ classlist = ['Consumable', 'Container', 'Weapon', 'Gem', 'Armor', 'Projectile', 
 classIDlist = [0, 1, 2, 3, 4, 6, 7, 9, 10, 12, 13, 15, 16, 17]
 fractionlist = ['_alliance', '_horde']
 
+
+#########################################################################################################
+#########################################################################################################
+def convertDateFormat(val):
+  month, day, year = val.split('/')
+  return datetime(int(year), int(month), int(day))
+
+#########################################################################################################
+#########################################################################################################
+def toWeekNumber(val):
+  return Timestamp(val).week
+
+#########################################################################################################
+# The function read a dataframe("auction"), and return the time range given in "start" and "end".
+#########################################################################################################
+def calItemsProfit(auction):
+  auction['Profit'] = auction['Avg Daily Posted'] * auction['AH MarketPrice']
+  return auction
+
+#########################################################################################################
+# The function read a dataframe("auction"), and return the time range given in "start" and "end".
+#########################################################################################################
+def getTimeRangeData(auction, start=to_datetime('2014-03-20'), end=to_datetime('2014-09-20')):
+  auction['PMktPrice Date'] = auction['PMktPrice Date'].apply(convertDateFormat)
+  auction = auction[(auction['PMktPrice Date'] >= start) & (auction['PMktPrice Date'] <=end)]
+  return auction
+
+#########################################################################################################
+#########################################################################################################
+def removeOutlierOfDailyPrice(auction):
+  auction = auction[auction['Item ID']==39]
+  auction = auction.ix[:, ['Week Num','PMktPrice Date','AH MarketPrice']]
+  auction = auction.pivot('PMktPrice Date', 'Week Num', 'AH MarketPrice')
+  return auction
+
+#########################################################################################################
+#########################################################################################################
+def analyzeItems(auction):
+  auction = auction[auction['Avg Daily Posted'] != 0]
+  auction['Week Num'] = auction['PMktPrice Date'].apply(toWeekNumber)
+  #
+  # remove price outlier of every week
+  #
+  auction = auction.groupby(['Week Num','Item ID'], as_index=False).mean()
+  profit_df = auction.ix[:, ['Week Num','Profit']]
+  profit_df = profit_df.groupby(['Week Num'], as_index=False).sum()
+  auction = auction.ix[:, ['Item ID','Week Num','Avg Daily Posted']]
+  auction = auction.merge(profit_df, how='inner', on=['Week Num'])
+
+  #
+  # calculate correlation coeffient
+  # return items with higher correlation coeffient in list
+  #
+  return auction
+
+
+
  
 #########################################################################################################
 # Calculate the p*q of every item first, 
@@ -50,7 +107,7 @@ def getMeanOrSumOfEachGroup(auction, groupby_columns=['Item_ID'], opt='mean'):
 # Read file ('../sourceFile/connected_date.csv').
 # Return Realms satisfiy given conditions (PvP, RP).
 #########################################################################################################
-def getConnectedRealms(connected_date, PvP='PvE', RP='Normal'):
+def getConnectedRealmsList(connected_date, PvP='PvE', RP='Normal'):
   print 'Getting Connected Realms...'
   df = read_csv('../sourceFile/connected_date.csv')
   df = df[(df['Date'] == connected_date) & (df['PvP'] == PvP) & (df['RP'] == RP)]
@@ -66,7 +123,7 @@ def getConnectedRealms(connected_date, PvP='PvE', RP='Normal'):
 # Read file ('../sourceFile/population/pop****.csv').
 # Return Realms satisfiy given conditions (connected, PvP, RP).
 #########################################################################################################
-def getRealms(filename, ascending_order=True, amount=5, Connected='N', PvP='PvE', RP='Normal', sort_by='Total'):
+def getRealmsList(filename, ascending_order=True, amount=5, Connected='N', PvP='PvE', RP='Normal', sort_by='Total'):
   print 'Getting Realms...'
   df = read_csv(pop_dir+'pop'+filename+'.csv')
   df = df[(df['PvP'] == PvP) & (df['RP'] == RP) & (df['Connected'] == Connected)]
@@ -95,14 +152,11 @@ def readFile(name):
 
 #########################################################################################################
 #########################################################################################################
-def convertDateFormat(val):
-  month, day, year = val.split('/')
-  return datetime(int(year), int(month), int(day))
+def getWeekNumber(val):
+  return val.isocalendar()[1]
 
 #########################################################################################################
 #########################################################################################################
-def getWeekNumber(val):
-  return val.isocalendar()[1]
 
 #########################################################################################################
 #########################################################################################################
@@ -136,33 +190,6 @@ def concateRealmsData(realm_list, fraction='_alliance', date='0401-0414', thresh
     pieces.append(auction)
   
   return concat(pieces, ignore_index=True)
-
-#########################################################################################################
-# Use this function to look into 'AH_Quantity' and 'AH_MarketPrice' field.
-# Read the csv file first, first apply "deleteUselessData", take mean of the targe_field.
-# The return dataframe will contain (item id, mean of targe field)
-#########################################################################################################
-def preprocessData(realm, date='0401-0414', threshold=2):
-  source_path = working_dir + date + '/'
-  target_path = source_path + 'afterPreprocess/'
-
-  if not os.path.isdir(target_path):
-    os.makedirs(target_path)
-  for fraction in fractionlist:
-    auction_name = realm + fraction
-    print 'preprocessing',  auction_name
-    auction = read_csv(source_path + auction_name + '.csv')
-    df = deleteUselessData(auction)
-    df = removeOutliers(df, threshold)
-    '''
-    #df['Profit'] = df['AH_MarketPrice'] * df['AH_Quantity']
-    #df
-
-    #df = df.pivot(remain_fields[0], remain_fields[1], remain_fields[2])
-    #df = DataFrame(df.mean()) # this line mean the same item within given time range
-    #df.columns = [target_field]
-    '''
-    df.to_csv(target_path + auction_name + '.csv',index=False)
 
 #########################################################################################################
 #########################################################################################################
