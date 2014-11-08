@@ -1,5 +1,6 @@
 from pandas import *
 from function import *
+from DataHandling import removeOutliers
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -52,10 +53,22 @@ def getTimeRangeData(auction, start=to_datetime('2014-03-20'), end=to_datetime('
 #########################################################################################################
 #########################################################################################################
 def removeOutlierOfDailyPrice(auction):
-  auction = auction[auction['Item ID']==39]
-  auction = auction.ix[:, ['Week Num','PMktPrice Date','AH MarketPrice']]
-  auction = auction.pivot('PMktPrice Date', 'Week Num', 'AH MarketPrice')
-  return auction
+  realm_items = [39]
+  for item in realm_items:
+    df = auction[auction['Item ID']==item]
+    df = df.ix[:, ['Week Num','PMktPrice Date','AH MarketPrice']]
+    df = df.pivot('PMktPrice Date', 'Week Num', 'AH MarketPrice')
+    df2 = removeOutliers(df)
+    # do something like unpivot to df2
+  return [df, df2]
+
+#########################################################################################################
+# Return "amount" items with higher correlation coeffient.
+#########################################################################################################
+def findHighCorrItems(auction, amount=20):
+  auction['Corr'] = auction['Avg Daily Poseted'].corr(auction['Profit'])
+  auction['Corr'] = auction.sort(['Corr'])
+  return auction[:amount]
 
 #########################################################################################################
 #########################################################################################################
@@ -71,10 +84,6 @@ def analyzeItems(auction):
   auction = auction.ix[:, ['Item ID','Week Num','Avg Daily Posted']]
   auction = auction.merge(profit_df, how='inner', on=['Week Num'])
 
-  #
-  # calculate correlation coeffient
-  # return items with higher correlation coeffient in list
-  #
   return auction
 
 

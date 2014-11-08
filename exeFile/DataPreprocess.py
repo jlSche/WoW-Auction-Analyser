@@ -42,7 +42,7 @@ def removeUselessColumns(auction, remain_columns=['PMktPrice_Date', 'Item_ID', '
 # The removed value will be NaN.
 # NOTE: This function does not remove those column values are all NaN 
 #########################################################################################################
-def removeOutliers(data, threshold=2, on_columns=['AH_MarketPrice']):
+def removeOutliers(data, threshold=2, on_columns=['AH MarketPrice']):
   for column in on_columns:
     data[column] = data[column][np.abs(data[column]-np.mean(data[column])) <= threshold*np.std(data[column])]
   return data
