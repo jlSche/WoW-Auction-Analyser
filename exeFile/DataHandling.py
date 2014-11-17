@@ -1,7 +1,7 @@
 from pandas import *
 from function import *
-from DataHandling import removeOutliers
 import matplotlib.pyplot as plt
+import DataPreprocess
 import numpy as np
 import os
 import sys
@@ -53,14 +53,18 @@ def getTimeRangeData(auction, start=to_datetime('2014-03-20'), end=to_datetime('
 #########################################################################################################
 #########################################################################################################
 def removeOutlierOfDailyPrice(auction):
-  realm_items = [39]
-  for item in realm_items:
-    df = auction[auction['Item ID']==item]
-    df = df.ix[:, ['Week Num','PMktPrice Date','AH MarketPrice']]
-    df = df.pivot('PMktPrice Date', 'Week Num', 'AH MarketPrice')
-    df2 = removeOutliers(df)
+  realm_items = [10286]
+  #df = auction.pivot('Week Num','Item ID','AH MarketPrice')
+  #df = auction.groupby('Week Num','Item ID'], as_index=False).mean()
+  #df = df.pivot('PMktPrice Date', 'Week Num', 'AH MarketPrice')
+  #for item in realm_items:
+    #df = auction[auction['Item ID']==item]
+    #df = df.ix[:, ['Item ID','Week Num','AH MarketPrice']]
+  df = auction.groupby(['Item ID','Week Num'], as_index=False)
+    #df = df.pivot('Item ID','Week Num','AH MarketPrice')
+    #df2 = DataPreprocess.removeOutliers(df)
     # do something like unpivot to df2
-  return [df, df2]
+  return df
 
 #########################################################################################################
 # Return "amount" items with higher correlation coeffient.
