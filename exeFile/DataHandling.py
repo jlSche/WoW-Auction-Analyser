@@ -53,18 +53,8 @@ def getTimeRangeData(auction, start=to_datetime('2014-03-20'), end=to_datetime('
 #########################################################################################################
 #########################################################################################################
 def removeOutlierOfDailyPrice(auction):
-  realm_items = [10286]
-  #df = auction.pivot('Week Num','Item ID','AH MarketPrice')
-  #df = auction.groupby('Week Num','Item ID'], as_index=False).mean()
-  #df = df.pivot('PMktPrice Date', 'Week Num', 'AH MarketPrice')
-  #for item in realm_items:
-    #df = auction[auction['Item ID']==item]
-    #df = df.ix[:, ['Item ID','Week Num','AH MarketPrice']]
   df = auction.groupby(['Item ID','Week Num'], as_index=False)
-    #df = df.pivot('Item ID','Week Num','AH MarketPrice')
-    #df2 = DataPreprocess.removeOutliers(df)
-    # do something like unpivot to df2
-  return df
+  return df.apply(DataPreprocess.removeOutliers)
 
 #########################################################################################################
 # Return "amount" items with higher correlation coeffient.
@@ -73,6 +63,19 @@ def findHighCorrItems(auction, amount=20):
   auction['Corr'] = auction['Avg Daily Poseted'].corr(auction['Profit'])
   auction['Corr'] = auction.sort(['Corr'])
   return auction[:amount]
+
+#########################################################################################################
+# Delete auction data which amount of item is zero.
+# Return columns which are given in "remain_columns" argment.
+# NOTE: Will the first 2 lines cause some problems?
+#########################################################################################################
+def removeUselessColumns(auction, remain_columns=['Item ID','Week Num','AH MarketPrice']):
+  auction = auction[auction['Avg Daily Posted'] != 0]
+  auction = auction[auction['AH MarketPrice'] != 0]  
+  #auction = auction[auction['AH_MarketPrice'].notnull()]
+  #auction = auction[auction['Profit'] != 0]
+  return auction.ix[:, remain_columns]
+
 
 #########################################################################################################
 #########################################################################################################
