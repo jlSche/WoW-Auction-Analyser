@@ -10,7 +10,7 @@ fractionlist = ['_alliance', '_horde']
 fields_name = 'Realm Name,Export Time,PMktPrice Date,Reserved,Item ID,Item Name,AH MarketPrice Coppers,AH Quantity,AH MarketPrice,AH MinimumPrice,14-day Median Market Price,Median Market Price StdDev,14-day Todays PMktPrice,PMktPrice StdDev,Daily Price Change,Avg Daily Posted,Avg Estimated Daily Sold,Estimated Demand\n' 
 fields_name = fields_name.replace(' ', '_')
 
-source_dir = '../sourceFile/'
+source_dir = '../sourceDir/'
 working_dir = '../workingFile/'
 
 # comment three lines below if the data are in local computer
@@ -36,7 +36,7 @@ if not os.path.isdir(working_dir):
 
 
 #########################################################################################################
-# Collect realm data that distribute in different date file into sourceFile/auctionData directory.
+# Collect realm data that distribute in different date file into sourceDir/auctionData directory.
 # Noted that this function will only gather filename that is *02.dat.
 # And this cmd_copy copy all the diretory, not one file at a time. 
 # You can avoid copy existed files by changing the collectedDate_list.
@@ -91,7 +91,7 @@ def createCopyOfCSV(realm):
         f_write.close()
 
 #####################################################################################################################
-# Read auction file in sourceFile/csvFile/auction.csv and then get rid of the unwanted columns.
+# Read auction file in sourceDir/csvFile/auction.csv and then get rid of the unwanted columns.
 # The remaining columns will be 'PMktPrice Date', 'Item ID', 'Item Name', 'AH MarketPrice', 'AH Quantity', 'Avg DailyPosted'
 # BECAREFUL that the new generated csv file will over write the original file. 
 #####################################################################################################################
@@ -109,7 +109,7 @@ def trimDataColumns(realm):
       auction.to_csv(source_dir + 'csvFile2/' + auction_name + '/' + datefile, index=False)
 
 #####################################################################################################################
-# Read auction data in given time range from (/sourceFile/csv/auction) and then combine all of them into a big file.
+# Read auction data in given time range from (/sourceDir/csv/auction) and then combine all of them into a big file.
 # The final big file will be stored in (workingFile).
 # parameters: (realm, start date, end date)
 #####################################################################################################################
@@ -133,7 +133,7 @@ def mergeSameAuction(realm, start_date, end_date):
   #the method below will disturb the order of auction data.
   '''
   auctionData = DataFrame()
-  sourcepath = '../sourceFile/auctionData/csv/'
+  sourcepath = '../sourceDir/auctionData/csv/'
   for fraction in fractionlist:
     auction = realm + fraction
     for csvfile in os.listdir(sourcepath + auction):

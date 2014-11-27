@@ -6,7 +6,7 @@ import os
 import sys
 
 working_dir = '../workingFile/'
-source_dir = '../sourceFile/'
+source_dir = '../sourceDir/'
 
 # comment three lines below if the data are in local computer
 usb_mode = '/Volumes/TOSHIBA/'

@@ -15,8 +15,8 @@ def findMissing(date_start, date_end):
 	month_start = int(date_start[:2])
 	month_end = int(date_end[:2]) + 1
 
-	for auction in os.listdir('./sourceFile'):
-		if os.path.isdir('./sourceFile/' + auction):
+	for auction in os.listdir('./sourceDir'):
+		if os.path.isdir('./sourceDir/' + auction):
 
 			missing_time = list()
 
@@ -44,10 +44,10 @@ def findMissing(date_start, date_end):
 					else:
 						filename += str(day)
 
-					#print './sourceFile/' + auction + '/' + filename + '02.dat'
-					if not os.path.isfile('./sourceFile/' + auction + '/' + filename + '02.dat'):
+					#print './sourceDir/' + auction + '/' + filename + '02.dat'
+					if not os.path.isfile('./sourceDir/' + auction + '/' + filename + '02.dat'):
 						missing_time.append(filename+'02.dat') 
-					if not os.path.isfile('./sourceFile/' + auction + '/' + filename + '14.dat'):
+					if not os.path.isfile('./sourceDir/' + auction + '/' + filename + '14.dat'):
 						missing_time.append(filename+'14.dat')
 			missingData[auction] = missing_time
 	return missingData
@@ -114,16 +114,16 @@ def checkItemList(source):
 
 '''
 	parameters: (path to new collected data, name of realm)
-	note: You need to put the new collected data into sourceFile first!
+	note: You need to put the new collected data into sourceDir first!
 	
-	func: cpoy all files of the given realm name in sourceFile to Realms directory
+	func: cpoy all files of the given realm name in sourceDir to Realms directory
 ''' 
 def collectRealmsData(sourceName, auction):
 	if not os.path.isdir('../RealmsData/' + auction):
 		os.makedirs('../RealmsData/' + auction)
 
 	target_dir = '../RealmsData/' + auction
-	cmd_find = 'find ../sourceFile/' + sourceName + ' -name "' + auction + '" -print'
+	cmd_find = 'find ../sourceDir/' + sourceName + ' -name "' + auction + '" -print'
 
 	for path in os.popen(cmd_find).readlines():
 		path = path[:-1]
@@ -216,7 +216,7 @@ def mergeSameAuction(date_start, date_end, auction):
 #makeCSVformat()
 #"""
 fraction = ['_alliance', '_horde']
-sourceFile_date = ['0314-0316', '0317-0319', '0320-0327', '0328-0407', '0408-0423', '0424-0514', '0515-0605', '0606-062702', '062714-0717']
+sourceDir_date = ['0314-0316', '0317-0319', '0320-0327', '0328-0407', '0408-0423', '0424-0514', '0515-0605', '0606-062702', '062714-0717']
 merged_date_0403 = ['shadowsong', 'borean-tundra', 'dathremar', 'khazgoroth']
 merged_date_0612 = ['drenden', 'arathor', 'nagrand', 'caelestrasz', 'duskwood', 'bloodhoof', 'azuremyst', 'staghelm']
 merged_data_0619 = ['tanaris', 'greymane', 'grizzly-hills', 'lothar', 'blackwater-raiders', 'shadow-council']
@@ -228,7 +228,7 @@ merged_date_0717 = ['dawnbringer', 'madoran']
 
 # WORKFLOW
 realms_to_update = ['borean-tundra']
-date_to_update = sourceFile_date
+date_to_update = sourceDir_date
 
 for realm in realms_to_update:
 	for date in date_to_update:
@@ -249,8 +249,8 @@ for realm in realms_to_update:
 
 
 
-#print 'clean item list:', cleanItemList('./sourceFile/itemlist.xml')
-#print 'check item list:', checkItemList('./sourceFile/itemlist.xml')
+#print 'clean item list:', cleanItemList('./sourceDir/itemlist.xml')
+#print 'check item list:', checkItemList('./sourceDir/itemlist.xml')
 #trimField('./workingData/mergedAuction/shadowsong_alliance.csv', [0, 1, 4, 6])
 #ff = read_csv('./workingData/mergedAuction/shadowsong_alliance.csv')
 #print ff

@@ -7,7 +7,7 @@ import os
 import sys
 
 working_dir = '../workingFile/'
-source_dir = '../sourceFile/'
+source_dir = '../sourceDir/'
 
 # comment three lines below if the data are in local computer
 usb_mode = '/Volumes/TOSHIBA/'
@@ -120,12 +120,12 @@ def getMeanOrSumOfEachGroup(auction, groupby_columns=['Item_ID'], opt='mean'):
 
 #########################################################################################################
 #########################################################################################################
-# Read file ('../sourceFile/connected_date.csv').
+# Read file ('../sourceDir/connected_date.csv').
 # Return Realms satisfiy given conditions (PvP, RP).
 #########################################################################################################
 def getConnectedRealmsList(connected_date, PvP='PvE', RP='Normal'):
   print 'Getting Connected Realms...'
-  df = read_csv('../sourceFile/connected_date.csv')
+  df = read_csv('../sourceDir/connected_date.csv')
   df = df[(df['Date'] == connected_date) & (df['PvP'] == PvP) & (df['RP'] == RP)]
 
   realmlist = []
@@ -136,7 +136,7 @@ def getConnectedRealmsList(connected_date, PvP='PvE', RP='Normal'):
   return realmlist
 
 #########################################################################################################
-# Read file ('../sourceFile/population/pop****.csv').
+# Read file ('../sourceDir/population/pop****.csv').
 # Return Realms satisfiy given conditions (connected, PvP, RP).
 #########################################################################################################
 def getRealmsList(filename, ascending_order=True, amount=5, Connected='N', PvP='PvE', RP='Normal', sort_by='Total'):
