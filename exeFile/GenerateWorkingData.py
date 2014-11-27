@@ -11,12 +11,14 @@ fields_name = 'Realm Name,Export Time,PMktPrice Date,Reserved,Item ID,Item Name,
 fields_name = fields_name.replace(' ', '_')
 
 source_dir = '../sourceDir/'
-working_dir = '../workingFile/'
+working_dir = '../workingDir/'
 
 # comment three lines below if the data are in local computer
+'''
 usb_mode = '/Volumes/TOSHIBA/'
 source_dir = usb_mode + source_dir[3:]
 working_dir = usb_mode + working_dir[3:]
+'''
 
 auction_dir = source_dir + 'auctionData/'
 csv_dir = source_dir + 'csvFile2/'
@@ -29,8 +31,8 @@ if not os.path.isdir(working_dir):
 #
 # csvFile will store same data as auctionData Directory, but in csv format
 #
-# workingFile stores realm data that combine ALL time range into one,
-#   and the sub directory of workingFile store realm data in specified time range.
+# workingDir stores realm data that combine ALL time range into one,
+#   and the sub directory of workingDir store realm data in specified time range.
 #   You should use the sub directory of each time range (afterPreprocess) to do analysis
 #########################################################################################################
 
@@ -110,7 +112,7 @@ def trimDataColumns(realm):
 
 #####################################################################################################################
 # Read auction data in given time range from (/sourceDir/csv/auction) and then combine all of them into a big file.
-# The final big file will be stored in (workingFile).
+# The final big file will be stored in (workingDir).
 # parameters: (realm, start date, end date)
 #####################################################################################################################
 def mergeSameAuction(realm, start_date, end_date):

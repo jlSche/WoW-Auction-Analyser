@@ -1,19 +1,20 @@
 from pandas import *
-from function import *
+#from function import *
 import matplotlib.pyplot as plt
 import DataPreprocess
 import numpy as np
 import os
 import sys
 
-working_dir = '../workingFile/'
+working_dir = '../workingDir/'
 source_dir = '../sourceDir/'
 
 # comment three lines below if the data are in local computer
+'''
 usb_mode = '/Volumes/TOSHIBA/'
 working_dir = usb_mode + working_dir[3:]
 source_dir = usb_mode + source_dir[3:]
-
+'''
 itemlist = read_csv(source_dir+'itemlist.csv')
 pop_dir = source_dir + 'population/'
 

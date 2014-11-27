@@ -5,7 +5,7 @@ import numpy as np
 import os
 import sys
 
-working_dir = '../workingFile/'
+working_dir = '../workingDir/'
 source_dir = '../sourceDir/'
 
 # comment three lines below if the data are in local computer
