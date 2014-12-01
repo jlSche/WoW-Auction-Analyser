@@ -72,3 +72,5 @@ for auction_name in os.listdir(working_dir + reading_dir):
         new_corr = DataFrame([{'Item ID':item, 'Corr':corr[0][1]}])
         item_corr_df = item_corr_df.append(new_corr, ignore_index=True)
     item_corr_df.to_csv('../corr/'+auction_name, index=False)
+
+

@@ -154,6 +154,19 @@ def getRealmsList(filename, ascending_order=True, amount=5, Connected='N', PvP='
   print 'Realms:', realmlist
   return realmlist
 
+
+#########################################################################################################
+# Return realms we needed!
+#########################################################################################################
+def getAuctionList(time='0411'):
+  pve_top = DataHandling.getRealmsList(time,ascending_order=False,PvP='PvE')
+  pve_low = DataHandling.getRealmsList(time,ascending_order=True,PvP='PvE')
+
+  pvp_top = DataHandling.getRealmsList(time,ascending_order=False,PvP='PvP')
+  pvp_low = DataHandling.getRealmsList(time,ascending_order=True,PvP='PvP')
+  return pve_top, pve_low, pvp_top, pvp_low
+
+
 #########################################################################################################
 # Merge the input auction with itemlist, default mergeing method is on 'Item ID' with 'left' method.
 # The function will only return specific column, which is claimed in the input argument 'field'.

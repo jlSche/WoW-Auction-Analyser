@@ -29,14 +29,6 @@ auction_dir = source_dir + 'auctionData/'
 csv_dir = source_dir + 'csvFile/'
 itemlist = read_csv(source_dir+'itemlist.csv')
 
-def getAuctionList(time='0411'):
-	pve_top = DataHandling.getRealmsList('0411',ascending_order=False,PvP='PvE')
-	pve_low = DataHandling.getRealmsList('0411',ascending_order=True,PvP='PvE')
-
-	pvp_top = DataHandling.getRealmsList('0411',ascending_order=False,PvP='PvP')
-	pvp_low = DataHandling.getRealmsList('0411',ascending_order=True,PvP='PvP')
-	return pve_top, pve_low, pvp_top, pvp_low
-
 '''
 	Return a list of dataframes that contain high correlation item for each auction.
 '''
@@ -56,3 +48,4 @@ def getIntersection(auction_list):
 	duplicate = auction_list[0]
 	for idx in range(1, len(auction_list)-1, 1):
 	    duplicate = list(set(duplicate).intersection(auction_list[idx]))
+	return duplicate
