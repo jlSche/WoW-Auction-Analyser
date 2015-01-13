@@ -50,7 +50,8 @@ def getTimeRangeData(auction, start=to_datetime('2014-03-20'), end=to_datetime('
   auction['PMktPrice Date'] = auction['PMktPrice Date'].apply(convertDateFormat)
   auction = auction[(auction['PMktPrice Date'] >= start) & (auction['PMktPrice Date'] <=end)]
   return auction
-
+  
+  
 #########################################################################################################
 #########################################################################################################
 def removeOutlierOfDailyPrice(auction):

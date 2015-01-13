@@ -21,7 +21,7 @@ working_dir = usb_mode + working_dir[3:]
 '''
 
 auction_dir = source_dir + 'auctionData/'
-csv_dir = source_dir + 'csvFile2/'
+csv_dir = source_dir + 'csvFile2015/'
 
 if not os.path.isdir(working_dir):
   os.makedirs(working_dir)
@@ -93,22 +93,21 @@ def createCopyOfCSV(realm):
         f_write.close()
 
 #####################################################################################################################
-# Read auction file in sourceDir/csvFile/auction.csv and then get rid of the unwanted columns.
+# Read auction file in sourceDir/csvFile2/auction.csv and then get rid of the unwanted columns.
 # The remaining columns will be 'PMktPrice Date', 'Item ID', 'Item Name', 'AH MarketPrice', 'AH Quantity', 'Avg DailyPosted'
-# BECAREFUL that the new generated csv file will over write the original file. 
+# BECAREFUL that the new generated csv file will overwrite the original file. 
 #####################################################################################################################
 def trimDataColumns(realm):
   for fraction in fractionlist:
     auction_name = realm + fraction
     print 'Trimming', auction_name, '...'
 
-    if not os.path.isdir(source_dir + 'csvFile2/' + auction_name):
-      os.makedirs(source_dir + 'csvFile2/' + auction_name)
+    if not os.path.isdir(csv_dir + auction_name):
+      os.makedirs(csv_dir + auction_name)
     for datefile in os.listdir(csv_dir + auction_name):
       auction = read_csv(csv_dir + auction_name + '/' + datefile)
       auction = auction.ix[:, ['PMktPrice Date','Item ID','AH MarketPrice','AH Quantity','Avg Daily Posted']]
-      #auction.to_csv(csv_dir + auction_name + '/' + datefile, index=False)
-      auction.to_csv(source_dir + 'csvFile2/' + auction_name + '/' + datefile, index=False)
+      auction.to_csv(csv_dir + auction_name + '/' + datefile, index=False)
 
 #####################################################################################################################
 # Read auction data in given time range from (/sourceDir/csv/auction) and then combine all of them into a big file.
@@ -125,6 +124,9 @@ def mergeSameAuction(realm, start_date, end_date):
     auction = realm + fraction
     print 'Merging', auction, '...'
     for csvfile in os.listdir(csv_dir + auction):
+      file_size = os.path.getsize(csv_dir+auction+'/'+csvfile)
+      if file_size <= 100000:
+          continue
       newData = read_csv(csv_dir + auction + '/' + csvfile)
       auction_list.append(newData)
 

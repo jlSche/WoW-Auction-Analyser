@@ -1,0 +1,19 @@
+=========================================================
+sourceDir/auctionData已經完全產生
+
+接下來要對整個資料(auctionData)作createeCopyOfCSV
+
+可將mergeSameAuction與trimDataColumns合併
+
+已完成
+=========================================================
+Population of 2015
+
+選擇人口最多的前13個伺服器進行分析
+
+伺服器明細在sourceFile/target_realm.dat
+=========================================================
+可以分析的資料已準備完成，置於(workingDir/0313-1012)中的各個csv檔
+目前僅使用到GenerateWorkingData.py
+
+

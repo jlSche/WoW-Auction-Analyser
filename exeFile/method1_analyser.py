@@ -10,14 +10,13 @@ qualitylist = ['Poor', 'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Heirl
 qualityIDlist = [0, 1, 2, 3, 4, 5, 7]
 classlist = ['Consumable', 'Container', 'Weapon', 'Gem', 'Armor', 'Projectile', 'Trade Goods', 'Book', 'Money', 'Quest', 'Key', 'Junk', 'Glyph', 'Caged Pet']
 classIDlist = [0, 1, 2, 3, 4, 6, 7, 9, 10, 12, 13, 15, 16, 17]
-fractionlist = ['_alliance', '_horde']
 
 fields_name = 'Realm Name,Export Time,PMktPrice Date,Reserved,Item ID,Item Name,AH MarketPrice Coppers,AH Quantity,AH MarketPrice,AH MinimumPrice,14-day Median Market Price,Median Market Price StdDev,14-day Todays PMktPrice,PMktPrice StdDev,Daily Price Change,Avg Daily Posted,Avg Estimated Daily Sold,Estimated Demand\n' 
 fields_name = fields_name.replace(' ', '_')
 
 source_dir = '../sourceDir/'
 working_dir = '../workingDir/'
-corr_dir = '../corr/'
+corr_dir = '../corr_result/'
 # comment three lines below if the data are in local computer
 '''
 usb_mode = '/Volumes/TOSHIBA/'
@@ -30,22 +29,61 @@ csv_dir = source_dir + 'csvFile/'
 itemlist = read_csv(source_dir+'itemlist.csv')
 
 '''
-	Return a list of dataframes that contain high correlation item for each auction.
+    Collect those items with corr value together, and write them to file('../corr_result/HighCorr').
 '''
-def getHighCorrItem(auction_list, threshold=0.8):
-	result_df = []
-	for auction_name in auction_list:
-	    auction = read_csv(corr_dir + auction_name + '_alliance.csv')
-	    auction = auction[(auction['Corr'] > 0.8 ) | (auction['Corr'] < -0.8)]
-	    id_list = auction['Item ID']
-	    result_df.append(id_list)
-	return result_df
+def getHighCorrItem(auction_list, threshold=0.9):
+    for fraction in fractionlist:
+        result_df = DataFrame(columns=['Realm', 'Item ID', 'Corr'])
+        for auction_name in auction_list:
+            auction = read_csv(corr_dir + auction_name + fraction) 
+            auction = auction[(auction['Corr'] >= threshold ) | (auction['Corr'] <= -threshold)]
+            auction['Realm'] = auction_name
+            result_df = result_df.append(auction, ignore_index=True)
+        result_df.to_csv('../corr_result/HighCorr/'+fraction[1:], index=False)
+    '''
+    for auction_name in auction_list:
+        auction = read_csv(corr_dir + auction_name + '_horde')
+        auction = auction[(auction['Corr'] >= threshold ) | (auction['Corr'] <= -threshold)]
+        id_list = list(auction['Item ID'])
+        horde_dict[auction_name] = id_list
+    '''
 
 '''
-	Find the intersection items in given auction_list.
+    Find the intersection items in given auction_list.
 '''
 def getIntersection(auction_list):
-	duplicate = auction_list[0]
-	for idx in range(1, len(auction_list)-1, 1):
-	    duplicate = list(set(duplicate).intersection(auction_list[idx]))
-	return duplicate
+    duplicate = auction_list[0]
+    for idx in range(1, len(auction_list)-1, 1):
+        duplicate = list(set(duplicate).intersection(auction_list[idx]))
+    return duplicate
+
+
+def analysis(corr_result):
+    new_df = corr_result.rename(columns={'Item ID':'Item_ID'}, inplace=False)
+    detail = new_df.merge(itemlist, how='left', on='Item_ID')
+
+    quality_amount = []
+    class_amount = []
+    for quality in qualitylist:
+        quality_amount.append(len(detail[detail['qualityname']==quality]))
+
+    for class_name in classlist:
+        class_amount.append(len(detail[detail['classname']==class_name]))
+
+    return quality_amount, class_amount
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
