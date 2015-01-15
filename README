@@ -16,4 +16,13 @@ Population of 2015
 可以分析的資料已準備完成，置於(workingDir/0313-1012)中的各個csv檔
 目前僅使用到GenerateWorkingData.py
 
+已完成
+=========================================================
+每一伺服器各物品的CORR已計算出，存於corr_result
+每一伺服器有CORR >= 0.9的物品，存於corr_result/HighCorr
+每一伺服器每一周之交易量，存於corr_result/(alliance_profit.csv, horde_profit.csv)
 
+應完成事項：
+  這些高CORR物品數量與所處伺服器經濟情況的走勢
+  這些物品的共同點(class, quality)
+  預測各伺服器10/12之後的經濟情況

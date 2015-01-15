@@ -29,10 +29,10 @@ itemlist = read_csv(source_dir+'itemlist.csv')
 
 reading_dir = '0313-1012/temp/'
 def method1(auction_list, date_start='2014-03-13', date_end='2014-10-12'):
-    for auction_name in auction_list:
-        for fraction in fractionlist:
+    for fraction in fractionlist:
+        auction_profit = DataFrame(columns=['Realm','Fraction','Week Num','Profit'])
+        for auction_name in auction_list:
             auction = read_csv(working_dir + auction_name + fraction + '.csv')
-            #auction = read_csv(working_dir + reading_dir + auction_name + fraction + '.csv')
 
             # time range
             auction = DataHandling.getTimeRangeData(auction,start=date_start,end=date_end)
@@ -53,7 +53,7 @@ def method1(auction_list, date_start='2014-03-13', date_end='2014-10-12'):
             auction.drop_duplicates(inplace=True)
             
             # group auction by 'week number' and 'item id'
-            auction = auction.ix[:, ['Week Num','Item ID','Avg Daily Posted','Profit']]
+            auction = auction.ix[:, ['Week Num','Item ID','Avg Daily Posted','Profit', 'AH MarketPrice']]
             grouped_auction = auction.groupby(['Week Num','Item ID'], as_index=False)
 
             # get "mean of item weekly quantity"
@@ -61,20 +61,31 @@ def method1(auction_list, date_start='2014-03-13', date_end='2014-10-12'):
             
             # get "mean of item weekly profit"
             item_profit_weekly_mean = grouped_auction['Profit'].mean()
-            
-            
+
+            # get "mean of item weekly price"
+            item_price_weekly_mean = grouped_auction['AH MarketPrice'].mean()
+           
+            # generate auction detail file, columns contain (Week Num, Item ID, Avg Daily Posted, AH MarketPrice)
+            auction_detail = item_q_weekly_mean.merge(item_price_weekly_mean) 
+            auction_detail.to_csv('../corr_result/auction_detail/' + auction_name + fraction, index=False)
+
             # get "realm's weekly profit"
             realm_weekly_profit = item_profit_weekly_mean.groupby(['Week Num'])['Profit'].sum()
             realm_weekly_profit = DataFrame(realm_weekly_profit, columns=['Profit']).reset_index()
            
             auction = item_q_weekly_mean.merge(realm_weekly_profit) 
+
+            # gathering data for building auction_profit dataframe.            
+            realm_weekly_profit['Realm'] = auction_name
+            realm_weekly_profit['Fraction'] = fraction[1:]
+            auction_profit = auction_profit.append(realm_weekly_profit, ignore_index=True)
             
             # get all item id show up in that realm
             # put the code here note outside for loop because items show up in each realm may be different
             temp_id_list = auction['Item ID']
             temp_id_list = temp_id_list.drop_duplicates()
             id_list = temp_id_list.tolist()
-            
+             
             # get correlation coefficient between "item's mean daily posted" and "auction weekly profit" for each item.
             # item shows up at least 10 of 30 weeks will be recorded.
             item_corr_df = DataFrame(columns=['Item ID','Corr'])
@@ -89,3 +100,7 @@ def method1(auction_list, date_start='2014-03-13', date_end='2014-10-12'):
             
             print 'finish',auction_name+fraction,'...'
             
+        auction_profit.to_csv('../corr_result/'+fraction[1:]+'_profit.csv', index=False)
+    
+
+
