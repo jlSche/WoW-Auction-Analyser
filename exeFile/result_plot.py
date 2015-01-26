@@ -114,7 +114,7 @@ def plotTypeCluster():
         ##########################################################
         #pp = PdfPages('../corr_result/fig/cluster_'+realm_tpye['pvp']+'_'+realm_type['Fraction'])
         fig, ax = plt.subplots()
-        sizes = np.pi * (3 * np.asarray(occurrence_list)) ** 2
+        sizes = np.pi * (2 * np.asarray(occurrence_list)) ** 2
         colors = np.random.rand(len(quality_list))
         ax.scatter(class_list, quality_list, s=sizes, c=colors, alpha=0.5)
         

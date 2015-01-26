@@ -31,7 +31,7 @@ itemlist = read_csv(source_dir+'itemlist.csv')
 '''
     Collect those items with corr value together, and write them to file('../corr_result/HighCorr').
 '''
-def getHighCorrItem(auction_list,threshold=0.9):
+def getHighCorrItem(auction_list,threshold=0.75):
     result_df = DataFrame(columns=['Realm', 'Fraction','Item ID', 'Corr'])
     for fraction in fractionlist:
         for auction_name in auction_list:
@@ -70,7 +70,35 @@ def analysis(corr_result):
     return quality_amount, class_amount
 
 
+#########################################################################
+# Return the occurence of each high-corr items
+#########################################################################
+def returnItemOccurence():
+    df = read_csv('../corr_result/HighCorr/allRealms.csv')
+ 
+    p_a = df[(df['pvp']=='pvp') & (df['Fraction']=='alliance')]
+    p_h = df[(df['pvp']=='pvp') & (df['Fraction']=='horde')]
+    e_a = df[(df['pvp']=='pve') & (df['Fraction']=='alliance')]
+    e_h = df[(df['pvp']=='pve') & (df['Fraction']=='horde')]
+    
+    for realm_type in [p_a, p_h, e_a, e_h]:
 
+        ##########################################################
+        # find occurence of each cluster
+        ##########################################################
+        item_dict = {}
+        for idx in range(0, len(realm_type)):
+
+            itemid = realm_type.iloc[idx]['Item ID']
+            if item_dict.has_key(itemid):
+                item_dict[itemid] += 1
+            else:
+                item_dict[itemid] = 1
+       
+        print realm_type.iloc[0]['pvp'],realm_type.iloc[0]['Fraction'],': (len):',len(item_dict)
+        for key, val in item_dict.items():
+            if val > 1:
+                print key, val
 
 
 

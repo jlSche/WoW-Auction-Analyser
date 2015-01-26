@@ -92,7 +92,7 @@ def method1(auction_list, date_start='2014-03-13', date_end='2014-10-12'):
             for item in id_list:
                 temp_item = auction[auction['Item ID']==item]
                 occurence_count = len(temp_item)
-                if occurence_count >= 10:
+                if occurence_count >= 15:
                     corr = np.corrcoef(x=temp_item['AH Quantity'], y=temp_item['Profit'])
                     new_corr = DataFrame([{'Item ID':item, 'Corr':corr[0][1]}])
                     item_corr_df = item_corr_df.append(new_corr, ignore_index=True)
