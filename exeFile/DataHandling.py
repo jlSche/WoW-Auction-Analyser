@@ -40,7 +40,7 @@ def toWeekNumber(val):
 # The function read a dataframe("auction"), and return the time range given in "start" and "end".
 #########################################################################################################
 def calItemsProfit(auction):
-  auction['Profit'] = auction['Avg Daily Posted'] * auction['AH MarketPrice']
+  auction['Profit'] = auction['AH Quantity'] * auction['AH MarketPrice']
   return auction
 
 #########################################################################################################
@@ -72,7 +72,8 @@ def findHighCorrItems(auction, amount=20):
 # NOTE: Will the first 2 lines cause some problems?
 #########################################################################################################
 def removeUselessColumns(auction, remain_columns=['Item ID','Week Num','AH MarketPrice']):
-  auction = auction[auction['Avg Daily Posted'] != 0]
+  #auction = auction[auction['Avg Daily Posted'] != 0]
+  auction = auction[auction['AH Quantity'] != 0]
   auction = auction[auction['AH MarketPrice'] != 0]  
   #auction = auction[auction['AH_MarketPrice'].notnull()]
   #auction = auction[auction['Profit'] != 0]

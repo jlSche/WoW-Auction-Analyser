@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 auction_list = read_csv('../sourceDir/target_realm.dat')
-auction_name = auction_list['realm']
+auction_name = auction_list['Realm']
 item_list = read_csv('../sourceDir/itemlist.csv')
 
 def plotCorrelation(name='darkspear', fraction='alliance', attr=['Avg Daily Posted','Profit','AH MarketPrice']):
@@ -61,12 +61,87 @@ def plotCorrelation(name='darkspear', fraction='alliance', attr=['Avg Daily Post
     '''
 
 
-def plotCluster(fraction='alliance', attr=['Avg Daily Posted','Profit','AH MarketPrice']):
+##############################################################################################
+# Plot realms with same realm_type(pvp or pve) in a grapgh.
+# So this function will generate (fraction)*(type) 4 figures
+##############################################################################################
+def plotTypeCluster():
+    high_corr_items = read_csv('../corr_result/HighCorr/allRealms.csv')
+    item_list.rename(columns={'Item_ID':'Item ID'}, inplace=True)
+    high_corr_items = high_corr_items.merge(item_list, how='left', on=['Item ID'])
+
+    # p: pvp, e: pve, a: alliance, h: horde
+    p_a = high_corr_items[(high_corr_items['pvp']=='pvp') & (high_corr_items['Fraction']=='alliance')]
+    p_h = high_corr_items[(high_corr_items['pvp']=='pvp') & (high_corr_items['Fraction']=='horde')]
+    e_a = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='alliance')]
+    e_h = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='horde')]
+    
+    pp = PdfPages('../corr_result/fig/cluster_type')
+    
+    for realm_type in [p_a, p_h, e_a, e_h]:
+        quality_list = list(realm_type['qualityid'])
+        class_list = list(realm_type['classid'])
+
+        ##########################################################
+        # find occurence of each cluster
+        ##########################################################
+        item_dict = {}
+        for idx in range(0, len(quality_list)):
+            classid = class_list[idx]*10
+            qualityid = quality_list[idx]
+            itemid = classid + qualityid
+
+            if item_dict.has_key(itemid):
+                item_dict[itemid] += 1
+            else:
+                item_dict[itemid] = 1
+        
+        quality_list = []
+        class_list = []
+        occurrence_list = []
+        for item in item_dict.items():
+            _class = item[0] / 10
+            _quality = item[0] % 10
+            _occurrence = item[1]
+            quality_list.append(_quality)
+            class_list.append(_class)
+            occurrence_list.append(_occurrence)
+        
+        print 'quality:',quality_list 
+        print 'class:',class_list 
+        print 'occurrence:',occurrence_list 
+        
+        ##########################################################
+        #pp = PdfPages('../corr_result/fig/cluster_'+realm_tpye['pvp']+'_'+realm_type['Fraction'])
+        fig, ax = plt.subplots()
+        sizes = np.pi * (3 * np.asarray(occurrence_list)) ** 2
+        colors = np.random.rand(len(quality_list))
+        ax.scatter(class_list, quality_list, s=sizes, c=colors, alpha=0.5)
+        
+        ax.set_xlim([-1,17])
+        ax.set_xticks([-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17])
+        ax.set_yticks([-1,0,1,2,3,4,5,6,7])
+
+        ax.set_xlabel('Class ID', fontsize=20)
+        ax.set_ylabel('Quality ID', fontsize=20)
+        ax.set_title(realm_type.iloc[0]['pvp']+' '+realm_type.iloc[0]['Fraction']+ ': Item Class Distribution.')
+
+        ax.grid(True)
+        #fig.tight_layout()
+
+        plt.draw()
+        plt.savefig(pp, format='pdf')
+    pp.close()
+
+##############################################################################################
+# Plot realms with same fraction in a grapgh
+##############################################################################################
+def plotFractionCluster(fraction='alliance', attr=['Avg Daily Posted','Profit','AH MarketPrice']):
     high_corr_items = read_csv('../corr_result/HighCorr/'+fraction)
 
     ##########################################################
     #positive corr
-    high_corr_items = high_corr_items[high_corr_items['Corr'] < 0]
+    #high_corr_items = high_corr_items[high_corr_items['Corr'] < 0]
     ##########################################################
 
     item_list.rename(columns={'Item_ID':'Item ID'}, inplace=True)

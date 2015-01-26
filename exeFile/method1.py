@@ -42,7 +42,7 @@ def method1(auction_list, date_start='2014-03-13', date_end='2014-10-12'):
              
             # temp_auction is used for doing remove outliers of weekly item price
             temp_auction = DataHandling.removeUselessColumns(auction, remain_columns=['Item ID','Week Num','AH MarketPrice'])
-            auction = DataHandling.removeUselessColumns(auction, remain_columns=['Item ID','Week Num','Avg Daily Posted'])
+            auction = DataHandling.removeUselessColumns(auction, remain_columns=['Item ID','Week Num','AH Quantity'])
             temp_auction = DataHandling.removeOutlierOfDailyPrice(temp_auction)
             auction = auction.merge(temp_auction, on=['Item ID','Week Num'],right_index=True,left_index=True)
             
@@ -53,11 +53,11 @@ def method1(auction_list, date_start='2014-03-13', date_end='2014-10-12'):
             auction.drop_duplicates(inplace=True)
             
             # group auction by 'week number' and 'item id'
-            auction = auction.ix[:, ['Week Num','Item ID','Avg Daily Posted','Profit', 'AH MarketPrice']]
+            auction = auction.ix[:, ['Week Num','Item ID','AH Quantity','Profit', 'AH MarketPrice']]
             grouped_auction = auction.groupby(['Week Num','Item ID'], as_index=False)
 
             # get "mean of item weekly quantity"
-            item_q_weekly_mean = grouped_auction['Avg Daily Posted'].mean()
+            item_q_weekly_mean = grouped_auction['AH Quantity'].mean()
             
             # get "mean of item weekly profit"
             item_profit_weekly_mean = grouped_auction['Profit'].mean()
@@ -93,7 +93,7 @@ def method1(auction_list, date_start='2014-03-13', date_end='2014-10-12'):
                 temp_item = auction[auction['Item ID']==item]
                 occurence_count = len(temp_item)
                 if occurence_count >= 10:
-                    corr = np.corrcoef(x=temp_item['Avg Daily Posted'], y=temp_item['Profit'])
+                    corr = np.corrcoef(x=temp_item['AH Quantity'], y=temp_item['Profit'])
                     new_corr = DataFrame([{'Item ID':item, 'Corr':corr[0][1]}])
                     item_corr_df = item_corr_df.append(new_corr, ignore_index=True)
             item_corr_df.to_csv('../corr_result/'+auction_name+fraction, index=False)
