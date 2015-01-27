@@ -280,3 +280,45 @@ def plotEachRealmCluster(fraction='alliance', attr=['Avg Daily Posted','Profit',
         #'''
 
 
+
+##############################################################################################
+# Plot how the eco-items composed in 4 different economic systems
+##############################################################################################
+def plotComposing(category='classname'):
+    high_corr = read_csv('../corr_result/HighCorr/allRealms.csv')
+    items = read_csv('../sourceDir/itemlist.csv')
+    high_corr = high_corr.merge(items,left_on='Item ID',right_on='Item_ID',how='left')
+
+    p_a = high_corr[(high_corr['pvp']=='pvp') & (high_corr['Fraction']=='alliance')] 
+    p_h = high_corr[(high_corr['pvp']=='pvp') & (high_corr['Fraction']=='horde')] 
+    e_a = high_corr[(high_corr['pvp']=='pve') & (high_corr['Fraction']=='alliance')] 
+    e_h = high_corr[(high_corr['pvp']=='pve') & (high_corr['Fraction']=='horde')]
+
+
+    pp = PdfPages('../corr_result/fig/ecoItemsComposing')
+
+    for realm_type in [p_a, p_h, e_a, e_h]:
+        # sum each category
+        grouped = realm_type.groupby([category]).size()
+        category_list = list(grouped.index)
+        count_list =  grouped.values
+        color_list = ['lightcoral','white','lightyellow','yellowgreen','lightskyblue','magenta','lightgray','gold','hotpink']
+
+        # plot
+        fig, ax = plt.subplots()
+        plt.pie(count_list, labels=category_list, colors=color_list,autopct='%1.1f%%', shadow=True, startangle=90)
+        plt.axis('equal')
+        
+        ax.set_title(realm_type.iloc[0]['pvp']+' '+realm_type.iloc[0]['Fraction'], loc='left')
+
+        ax.grid(True)
+
+        plt.draw()
+        plt.savefig(pp, format='pdf')
+    pp.close()
+
+
+
+
+
+

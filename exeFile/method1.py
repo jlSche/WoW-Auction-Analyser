@@ -100,7 +100,7 @@ def method1(auction_list, date_start='2014-03-13', date_end='2014-10-12'):
             
             print 'finish',auction_name+fraction,'...'
             
-        auction_profit.to_csv('../corr_result/'+fraction[1:]+'_profit.csv', index=False)
+        auction_profit.to_csv('../corr_result/'+fraction[1:]+'_profit.csv', index=False, header=False, mode='a')
     
 
 

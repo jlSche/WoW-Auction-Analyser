@@ -31,12 +31,12 @@ itemlist = read_csv(source_dir+'itemlist.csv')
 '''
     Collect those items with corr value together, and write them to file('../corr_result/HighCorr').
 '''
-def getHighCorrItem(auction_list,threshold=0.75):
+def getHighCorrItem(auction_list,threshold=0.8):
     result_df = DataFrame(columns=['Realm', 'Fraction','Item ID', 'Corr'])
     for fraction in fractionlist:
         for auction_name in auction_list:
             auction = read_csv(corr_dir + auction_name + fraction) 
-            auction = auction[(auction['Corr'] >= threshold ) | (auction['Corr'] <= -threshold)]
+            auction = auction[(auction['Corr'] > threshold ) | (auction['Corr'] < -threshold)]
             auction['Realm'] = auction_name
             auction['Fraction'] = fraction[1:]
             result_df = result_df.append(auction, ignore_index=True)
