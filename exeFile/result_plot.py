@@ -207,8 +207,8 @@ def plotFractionCluster(fraction='alliance', attr=['Avg Daily Posted','Profit','
     #'''
 
 
-def plotEachRealmCluster(fraction='alliance', attr=['Avg Daily Posted','Profit','AH MarketPrice']):
-    high_corr_items = read_csv('../corr_result/HighCorr/'+fraction)
+def plotEachRealmCluster(auctionlist):
+    high_corr_items = read_csv('../corr_result/HighCorr/allRealms.csv')
 
     item_list.rename(columns={'Item_ID':'Item ID'}, inplace=True)
     high_corr_items = high_corr_items.merge(item_list, how='left', on=['Item ID'])
@@ -218,66 +218,61 @@ def plotEachRealmCluster(fraction='alliance', attr=['Avg Daily Posted','Profit',
     #[positive_corr_items, negative_corr_items] = [high_corr_items[high_corr_items['Corr'] > 0], high_corr_items[high_corr_items['Corr'] < 0]]
     ##########################################################
 
-    pp = PdfPages('../corr_result/fig/cluster_'+fraction)
-    for auction in auction_name:
-        temp_df = high_corr_items[high_corr_items['Realm']==auction]
-        if len(temp_df) == 0:
-            continue
-        quality_list = list(temp_df['qualityid'])
-        class_list = list(temp_df['classid'])
+    pp = PdfPages('../corr_result/fig/cluster_eachRealm')
+    for fraction in ['alliance','horde']:
+        for auction in auctionlist:
+            temp_df = high_corr_items[(high_corr_items['Realm']==auction)&(high_corr_items['Fraction']==fraction)]
+            if len(temp_df) == 0:
+                continue
+            quality_list = list(temp_df['qualityid'])
+            class_list = list(temp_df['classid'])
 
-        ##########################################################
-        # find occurence of each cluster
-        ##########################################################
-        item_dict = {}
-        for idx in range(0, len(quality_list)):
-            classid = class_list[idx]*10
-            qualityid = quality_list[idx]
-            itemid = classid + qualityid
+            ##########################################################
+            # find occurence of each cluster
+            ##########################################################
+            item_dict = {}
+            for idx in range(0, len(quality_list)):
+                classid = class_list[idx]*10
+                qualityid = quality_list[idx]
+                itemid = classid + qualityid
 
-            if item_dict.has_key(itemid):
-                item_dict[itemid] += 1
-            else:
-                item_dict[itemid] = 1
-        #print item_dict
-        
-        quality_list = []
-        class_list = []
-        occurrence_list = []
-        for item in item_dict.items():
-            _class = item[0] / 10
-            _quality = item[0] % 10
-            _occurrence = item[1]
-            quality_list.append(_quality)
-            class_list.append(_class)
-            occurrence_list.append(_occurrence)
-        
-        ##########################################################
-        #'''
-        fig, ax = plt.subplots()
-        sizes = np.pi * (3 * np.asarray(occurrence_list)) ** 2
-        colors = np.random.rand(len(quality_list))
-        ax.scatter(class_list, quality_list, s=sizes, c=colors, alpha=0.5)
-        
-        ax.set_xlim([-1,17])
-        ax.set_xticks([-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17])
-        ax.set_yticks([-1,0,1,2,3,4,5,6,7])
+                if item_dict.has_key(itemid):
+                    item_dict[itemid] += 1
+                else:
+                    item_dict[itemid] = 1
+            #print item_dict
+            
+            quality_list = []
+            class_list = []
+            occurrence_list = []
+            for item in item_dict.items():
+                _class = item[0] / 10
+                _quality = item[0] % 10
+                _occurrence = item[1]
+                quality_list.append(_quality)
+                class_list.append(_class)
+                occurrence_list.append(_occurrence)
+            
+            ##########################################################
+            #'''
+            fig, ax = plt.subplots()
+            sizes = np.pi * (3 * np.asarray(occurrence_list)) ** 2
+            colors = np.random.rand(len(quality_list))
+            ax.scatter(class_list, quality_list, s=sizes, c=colors, alpha=0.5)
+            
+            ax.set_xlim([-1,17])
+            ax.set_xticks([-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17])
+            ax.set_yticks([-1,0,1,2,3,4,5,6,7])
 
-        ax.set_xlabel('Class ID', fontsize=20)
-        ax.set_ylabel('Quality ID', fontsize=20)
-        ax.set_title('Item Class Distribution')
-        
-        ax.set_title(auction)
-        ax.grid(True)
-        fig.tight_layout()
+            ax.set_xlabel('Class ID', fontsize=20)
+            ax.set_ylabel('Quality ID', fontsize=20)
+            ax.set_title(auction + ' ' + fraction + '\'s Item Class Distribution') 
+            ax.grid(True)
+            fig.tight_layout()
 
-        plt.draw()
-        plt.savefig(pp, format='pdf')
-        #plt.show()
-        #'''
-        #print high_corr_items
+            plt.draw()
+            plt.savefig(pp, format='pdf')
     pp.close()
-        #'''
 
 
 

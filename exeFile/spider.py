@@ -22,14 +22,20 @@ def getItemName(itemid):
         return str(itemid) + ' does not match anything!'
 
 def main():
-    with open('highCorrItemName.dat', 'wb') as f_write:
-        f_alliance = read_csv('../corr_result/HighCorr/alliance')
-        for itemid in f_alliance['Item ID']:
-            f_write.write(getItemName(int(itemid))+'\n')
-        f_horde = read_csv('../corr_result/HighCorr/horde')
-        for itemid in f_horde['Item ID']:
-            f_write.write(getItemName(int(itemid))+'\n')
 
+    df_allItems = read_csv('../corr_result/HighCorr/allRealms.csv')
+    item_detail = DataFrame(columns=['Realm','Fraction','Item','Corr'])
+    for idx in df_allItems.index:
+
+        realm = df_allItems.ix[idx]['Realm']
+        fraction = df_allItems.ix[idx]['Fraction']
+        item = getItemName(int(df_allItems.ix[idx]['Item ID']))
+        corr = df_allItems.ix[idx]['Corr']
+        
+        new_item = DataFrame(([{'Realm': realm,'Fraction': fraction,'Item': item,'Corr': corr}]))
+        item_detail = item_detail.append(new_item, ignore_index=True)
+    item_detail.to_csv('../corr_result/HighCorr/highCorrItemName.dat',index=False)
+        
 
 if __name__ == '__main__':
     main()
