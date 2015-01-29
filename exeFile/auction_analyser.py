@@ -76,24 +76,27 @@ def isCorrWithMarketQuantity(classname='Armor',qualityname='Uncommon',individual
         ######################################################################################################
             eco_items = high_corr_items[(high_corr_items['Realm']==realm)&(high_corr_items['Fraction']==fraction)&(high_corr_items['classname']==classname)&(high_corr_items['qualityname']==qualityname)]
 
-        # group auction to get weekly market quantity
-        # if market == profit, need to calculate profit
+        # group auction to get weekly market information
+        if market == profit:
+            auction['Profit'] = auction['AH Quantity']*auciton['AH MarketPrice']
         market_weekly = auction.groupby(['Week Num'],as_index=False)[market].sum()
 
         for itemid in set(eco_items['Item ID']):
             item_weekly = auction[auction['Item ID']==int(itemid)].ix[:,['Week Num',individual]]
-
             item_weekly = item_weekly.merge(market_weekly,on=['Week Num'],how='left')
 
-            # if both are AH Quantity, change to xx_x, xx_y
-            #corr = np.corrcoef(x=item_weekly_quantity['AH Quantity_x'],y=item_weekly_quantity['AH Quantity_y'])
+            # if both individual and market variable are AH Quantity, add some words to their end
+            if market == individual:
+                individiual += '_x'
+                market += '_y'
+
             corr = np.corrcoef(x=item_weekly[market],y=item_weekly[individual])
             if (corr[0][1] > 0.7) or (corr[0][1]<-0.7):
                 matched_item = DataFrame([{'Realm': realm,'Fration': fraction,'Item ID': int(itemid),'Corr': corr[0][1]}])
                 matched_df = matched_df.append(matched_item,ignore_index=True)
                 print 'item', int(itemid), 'in', realm, fraction, 'also has high correlation with market quantity with corr value ',corr[0][1]
     
-    matched_df.to_csv('../corr_result/HighCorr/priceCorrWithMarketQuantity.csv',index=False)
+    matched_df.to_csv('../corr_result/HighCorr/'+individual+'CorrWithMarket'+market,index=False)
 
 
 
