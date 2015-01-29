@@ -48,8 +48,9 @@ def getAuctionComposing():
         #''' 
     return realms_composing
        
-
-def isCorrWithMarketQuantity(classname='Armor',qualityname='Uncommon'):
+#indivudual : AH Quantity, AH MarketPrice
+#market     : AH Quantity, Profit
+def isCorrWithMarketQuantity(classname='Armor',qualityname='Uncommon',individual='AH Quantity',market='AH Quantity'):
     high_corr_items = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
 
     matched_df = DataFrame(columns=['Realm','Fration','Item ID','Corr'])
@@ -76,19 +77,23 @@ def isCorrWithMarketQuantity(classname='Armor',qualityname='Uncommon'):
             eco_items = high_corr_items[(high_corr_items['Realm']==realm)&(high_corr_items['Fraction']==fraction)&(high_corr_items['classname']==classname)&(high_corr_items['qualityname']==qualityname)]
 
         # group auction to get weekly market quantity
-        market_weekly_quantity = auction.groupby(['Week Num'],as_index=False)['AH Quantity'].sum()
+        # if market == profit, need to calculate profit
+        market_weekly = auction.groupby(['Week Num'],as_index=False)[market].sum()
 
-        for itemid in  set(eco_items['Item ID']):
-            item_weekly_quantity = auction[auction['Item ID']==int(itemid)].ix[:,['Week Num','AH Quantity']]
+        for itemid in set(eco_items['Item ID']):
+            item_weekly = auction[auction['Item ID']==int(itemid)].ix[:,['Week Num',individual]]
 
-            item_weekly_quantity = item_weekly_quantity.merge(market_weekly_quantity,on=['Week Num'],how='left')
-            corr = np.corrcoef(x=item_weekly_quantity['AH Quantity_x'],y=item_weekly_quantity['AH Quantity_y'])
+            item_weekly = item_weekly.merge(market_weekly,on=['Week Num'],how='left')
+
+            # if both are AH Quantity, change to xx_x, xx_y
+            #corr = np.corrcoef(x=item_weekly_quantity['AH Quantity_x'],y=item_weekly_quantity['AH Quantity_y'])
+            corr = np.corrcoef(x=item_weekly[market],y=item_weekly[individual])
             if (corr[0][1] > 0.7) or (corr[0][1]<-0.7):
                 matched_item = DataFrame([{'Realm': realm,'Fration': fraction,'Item ID': int(itemid),'Corr': corr[0][1]}])
                 matched_df = matched_df.append(matched_item,ignore_index=True)
                 print 'item', int(itemid), 'in', realm, fraction, 'also has high correlation with market quantity with corr value ',corr[0][1]
-
-    matched_df.to_csv('../corr_result/HighCorr/CorrWithMarketQuantity.csv',index=False)
+    
+    matched_df.to_csv('../corr_result/HighCorr/priceCorrWithMarketQuantity.csv',index=False)
 
 
 
