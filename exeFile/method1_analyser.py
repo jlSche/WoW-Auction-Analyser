@@ -47,7 +47,7 @@ def getHighCorrItem(auction_list,threshold=0.7):
     
     # generate complete information of high corr items
     itemlist = read_csv('../sourceDir/itemlist.csv')
-    result_df = result_df.merge(itemlist, on='Item ID', how='left')
+    result_df = result_df.merge(itemlist, on=['Item ID'], how='left')
 
     result_df.to_csv('../corr_result/HighCorr/ItemsDetail.csv', index=False)
 
@@ -80,31 +80,31 @@ def analysis(corr_result):
 # Return the occurence of each high-corr items
 #########################################################################
 def returnItemOccurence():
-    df = read_csv('../corr_result/HighCorr/allRealms.csv')
- 
+    df = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
+    
+    '''
     p_a = df[(df['pvp']=='pvp') & (df['Fraction']=='alliance')]
     p_h = df[(df['pvp']=='pvp') & (df['Fraction']=='horde')]
     e_a = df[(df['pvp']=='pve') & (df['Fraction']=='alliance')]
     e_h = df[(df['pvp']=='pve') & (df['Fraction']=='horde')]
     
     for realm_type in [p_a, p_h, e_a, e_h]:
-
+    '''
         ##########################################################
         # find occurence of each cluster
         ##########################################################
-        item_dict = {}
-        for idx in range(0, len(realm_type)):
-
-            itemid = realm_type.iloc[idx]['Item ID']
-            if item_dict.has_key(itemid):
-                item_dict[itemid] += 1
-            else:
-                item_dict[itemid] = 1
-       
-        print realm_type.iloc[0]['pvp'],realm_type.iloc[0]['Fraction'],': (len):',len(item_dict)
-        for key, val in item_dict.items():
-            if val > 1:
-                print key, val
+    item_dict = {}
+    for idx in range(0, len(df)):
+        itemid = df.iloc[idx]['Item ID']
+        if item_dict.has_key(itemid):
+            item_dict[itemid] += 1
+        else:
+            item_dict[itemid] = 1
+   
+    #print realm_type.iloc[0]['pvp'],realm_type.iloc[0]['Fraction'],': (len):',len(item_dict)
+    for key, val in item_dict.items():
+        if val > 1:
+            print int(key), 'shows up', val, 'times in', df[df['Item ID']==key].iloc[0]['Realm'], df[df['Item ID']==key].iloc[0]['Fraction'], 'and', df[df['Item ID']==key].iloc[1]['Realm'], df[df['Item ID']==key].iloc[1]['Fraction'] 
 
 
 

@@ -207,23 +207,25 @@ def plotFractionCluster(fraction='alliance', attr=['Avg Daily Posted','Profit','
     #'''
 
 
-def plotEachRealmCluster(auctionlist):
-    high_corr_items = read_csv('../corr_result/HighCorr/allRealms.csv')
+##############################################################################################
+# Plot  1. plottype = composing.    how are the high corr items composed in each realms
+#       2. plottype = sum.          the amount of each category in each realms
+##############################################################################################
+def plotEachRealmCluster(realmlist, plottype='composing'):
+    high_corr_items = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
+    
+    pp = None
+    if plottype == 'composing':
+        pp = PdfPages('../corr_result/fig/cluster_eachRealmComposing')
+    elif plottype == 'sum':
+        pp = PdfPages('../corr_result/fig/cluster_eachRealmSum')
 
-    item_list.rename(columns={'Item_ID':'Item ID'}, inplace=True)
-    high_corr_items = high_corr_items.merge(item_list, how='left', on=['Item ID'])
-
-    ##########################################################
-    #positive corr
-    #[positive_corr_items, negative_corr_items] = [high_corr_items[high_corr_items['Corr'] > 0], high_corr_items[high_corr_items['Corr'] < 0]]
-    ##########################################################
-
-    pp = PdfPages('../corr_result/fig/cluster_eachRealm')
     for fraction in ['alliance','horde']:
-        for auction in auctionlist:
-            temp_df = high_corr_items[(high_corr_items['Realm']==auction)&(high_corr_items['Fraction']==fraction)]
+        for realm in realmlist:
+            temp_df = high_corr_items[(high_corr_items['Realm']==realm)&(high_corr_items['Fraction']==fraction)]
             if len(temp_df) == 0:
                 continue
+
             quality_list = list(temp_df['qualityid'])
             class_list = list(temp_df['classid'])
 
@@ -240,7 +242,6 @@ def plotEachRealmCluster(auctionlist):
                     item_dict[itemid] += 1
                 else:
                     item_dict[itemid] = 1
-            #print item_dict
             
             quality_list = []
             class_list = []
@@ -252,26 +253,35 @@ def plotEachRealmCluster(auctionlist):
                 quality_list.append(_quality)
                 class_list.append(_class)
                 occurrence_list.append(_occurrence)
-            
             ##########################################################
-            #'''
-            fig, ax = plt.subplots()
-            sizes = np.pi * (3 * np.asarray(occurrence_list)) ** 2
-            colors = np.random.rand(len(quality_list))
-            ax.scatter(class_list, quality_list, s=sizes, c=colors, alpha=0.5)
             
-            ax.set_xlim([-1,17])
-            ax.set_xticks([-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17])
-            ax.set_yticks([-1,0,1,2,3,4,5,6,7])
+            if plottype == 'composing':
+                fig, ax = plt.subplots()
+                sizes = np.pi * (3 * np.asarray(occurrence_list)) ** 2
+                colors = np.random.rand(len(quality_list))
+                ax.scatter(class_list, quality_list, s=sizes, c=colors, alpha=0.5)
+                
+                ax.set_xlim([-1,17])
+                ax.set_xticks([-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17])
+                ax.set_yticks([-1,0,1,2,3,4,5,6,7])
 
-            ax.set_xlabel('Class ID', fontsize=20)
-            ax.set_ylabel('Quality ID', fontsize=20)
-            ax.set_title(auction + ' ' + fraction + '\'s Item Class Distribution') 
-            ax.grid(True)
-            fig.tight_layout()
+                ax.set_xlabel('Class ID', fontsize=20)
+                ax.set_ylabel('Quality ID', fontsize=20)
+                ax.set_title(realm + ' ' + fraction + '\'s Item Class Distribution') 
+                ax.grid(True)
+                fig.tight_layout()
 
-            plt.draw()
-            plt.savefig(pp, format='pdf')
+                plt.draw()
+                plt.savefig(pp, format='pdf')
+
+            elif plottype == 'sum':
+                temp_df = temp_df.ix[:,['classname','qualityname']]
+                temp_df = temp_df.groupby(['classname','qualityname'])
+                t = temp_df.size().unstack().fillna(0)
+                t.plot(kind='barh',stacked=True,xlim=[0,20],title=realm+' '+fraction)
+                plt.draw()
+                plt.savefig(pp, format='pdf')
+
     pp.close()
 
 
