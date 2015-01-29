@@ -48,14 +48,30 @@ Population of 2015
 發現：
   1.  初步看來，遊戲性質並沒有影響ECO-ITEMS的種類分佈，
       在PVE PVP ECO-ITEMS出現的種類以及組成比例大致相同 
+
   2.  eco-items沒有LEGENDDARY以上的物品，EPIC的都很少，
       或許在市場組成上這類型物品的數量就已經不多，
       原先會想說越是罕見的東西若市場上較常出現，或許代表市場很若落
       但想一想在實體世界中，高價奢侈品似乎也隨時都會有人買，不受景氣影響
+
   3.  幾乎每一個伺服器都存在eco-items，但每一個伺服器的eco-items不同
-  4.  有27/32個拍賣場有出現指標性商品,在這27個拍賣場中,僅有5個伺服器沒有來自(armor,uncommon)的指標性商品
+      32個拍賣場中完全沒有eco-items的拍賣場:
+      kelthuzad, horde
+      illidan, alliance
+      sargeras_horde
+      zuljin, horde
+      kiljaeden, horde
+
+  4.  有27/32個拍賣場有出現指標性商品,在這27個拍賣場中,沒有來自(armor,uncommon)的指標性商品的伺服器:
+      thrall, alliance
+      bleeding-hollow, horde
+      wyrmrest-accord, alliance
+      frostmourne, alliance
+      kiljaeden, alliance
+      
   5.  32個伺服器的確都是(armor,uncommon)占了大多數,
       但是所找出的(armor,uncommon)指標性商品在個別伺服器也不是該分類下市場上數量最大宗的商品
+
   6.  這些指標性商品的數量雖都有變動,但變動都不大,玩家可能無法察覺其數量變動
 
 =========================================================

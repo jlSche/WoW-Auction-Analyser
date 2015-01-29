@@ -31,7 +31,7 @@ itemlist = read_csv(source_dir+'itemlist.csv')
 '''
     Collect those items with corr value together, and write them to file('../corr_result/HighCorr').
 '''
-def getHighCorrItem(auction_list,threshold=0.8):
+def getHighCorrItem(auction_list,threshold=0.7):
     result_df = DataFrame(columns=['Realm', 'Fraction','Item ID', 'Corr'])
     for fraction in fractionlist:
         for auction_name in auction_list:
@@ -40,10 +40,16 @@ def getHighCorrItem(auction_list,threshold=0.8):
             auction['Realm'] = auction_name
             auction['Fraction'] = fraction[1:]
             result_df = result_df.append(auction, ignore_index=True)
-    
+   
+    # need only the top 8 population realms from pvp and pve
     realms_detail = read_csv('../sourceDir/target_realm.dat') 
     result_df = result_df.merge(realms_detail, on=['Realm'], how='left')
-    result_df.to_csv('../corr_result/HighCorr/allRealms.csv', index=False)
+    
+    # generate complete information of high corr items
+    itemlist = read_csv('../sourceDir/itemlist.csv')
+    result_df = result_df.merge(itemlist, on='Item ID', how='left')
+
+    result_df.to_csv('../corr_result/HighCorr/ItemsDetail.csv', index=False)
 
 '''
     Find the intersection items in given auction_list.

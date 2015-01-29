@@ -46,6 +46,15 @@ def getAuctionComposing():
         ''' 
        
 
+def generateHighCorrItemsDetail():
+    high_corr_items = read_csv('../corr_result/HighCorr/allRealms.csv')
+    itemlist = read_csv('../sourceDir/itemlist.csv')
+
+    high_corr_items = high_corr_items.merge(itemlist, left_on='Item ID', right_on='Item_ID', how='left')
+    high_corr_items.to_csv('../corr_result/HighCorr/ItemsDetail.csv', index=False)
+    
+
+
 
 
 
