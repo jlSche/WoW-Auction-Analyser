@@ -66,12 +66,17 @@ Population of 2015
       kiljaeden, horde
       corr=0.8時，所有拍賣場都會有eco-items
 
-  4.  有27/32個拍賣場有出現指標性商品,在這27個拍賣場中,沒有來自(armor,uncommon)的指標性商品的伺服器:
+  4.  corr=0.7, 27/32個拍賣場有出現指標性商品,在這27個拍賣場中,沒有來自(armor,uncommon)的指標性商品的伺服器:
       thrall, alliance
       bleeding-hollow, horde
       wyrmrest-accord, alliance
       frostmourne, alliance
       kiljaeden, alliance
+      corr=0.8, 沒有(armor,uncommon)的拍賣場：
+      kelthuzad, horde
+      illidan, alliance
+      sargeras, horde
+      kiljaeden, horde
       
   5.  32個伺服器的確都是(armor,uncommon)占了大多數,
       但是所找出的(armor,uncommon)指標性商品在個別伺服器也不是該分類下市場上數量最大宗的商品
