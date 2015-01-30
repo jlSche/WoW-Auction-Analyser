@@ -48,8 +48,12 @@ def getAuctionComposing():
         #''' 
     return realms_composing
        
+######################################################################################################
 #indivudual : AH Quantity, AH MarketPrice
 #market     : AH Quantity, Profit
+# 找出 某樣商品的價或是量 與 拍賣場的量或是景氣 呈現高相關的物品
+# 尚未檢查
+######################################################################################################
 def isCorrWithMarketQuantity(classname='Armor',qualityname='Uncommon',individual='AH Quantity',market='AH Quantity'):
     high_corr_items = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
 
@@ -100,6 +104,29 @@ def isCorrWithMarketQuantity(classname='Armor',qualityname='Uncommon',individual
 
 
 
+######################################################################################################
+# check the population, economic poverty status of all auctions
+# return those auction has least population and least poverty
+######################################################################################################
+def getWorstAuction():
+    target_realms = read_csv('../sourceDir/target_realm.dat')
+    pvp = target_realms[target_realms['pvp']=='pvp'][:8]
+    pve = target_realms[target_realms['pvp']=='pve']
+    pop_auctions = pvp.append(pve,ignore_index=True)
+
+    alliance = read_csv('../corr_result/alliance_profit.csv')
+    horde = read_csv('../corr_result/horde_profit.csv')
+    poverty_auctions = alliance.append(horde,ignore_index=True)
+    
+    # sort the auctions with population
+    pop_alliance = pop_auctions.sort(columns=['alliance'])
+    pop_horde = pop_auctions.sort(columns=['horde'])
+
+    # sort the auctions with poverty
+    #poverty_alliance = auctions.sort(columns=['alliance'])
+    #poverty_horde = auctions.sort(columns=['horde'])
+
+    return pop_alliance[:5], pop_horde[:5]#, #poverty_alliance[:5], poverty_horde[:5]
 
 
     
