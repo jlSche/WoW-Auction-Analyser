@@ -4,6 +4,7 @@ from mpl_toolkits.axes_grid1 import host_subplot
 from matplotlib.backends.backend_pdf import PdfPages
 import mpl_toolkits.axisartist as AA
 import matplotlib.pyplot as plt
+import os
 
 
 auction_list = read_csv('../sourceDir/target_realm.dat')
@@ -289,7 +290,7 @@ def plotEachRealmCluster(realmlist, plottype='composing'):
 ##############################################################################################
 # Plot how the eco-items composed in 4 different economic systems
 ##############################################################################################
-def plotComposing(category='classname'):
+def plotEcoItemsComposing(category='classname'):
     high_corr = read_csv('../corr_result/HighCorr/allRealms.csv')
     items = read_csv('../sourceDir/itemlist.csv')
     high_corr = high_corr.merge(items,left_on='Item ID',right_on='Item_ID',how='left')
@@ -323,7 +324,38 @@ def plotComposing(category='classname'):
     pp.close()
 
 
+##############################################################################################
+# Plot how are the economic system formed in each auction
+# not tested yet
+##############################################################################################
+def plotAuctionComposing(category='classname'):
+    color_list = ['lightcoral','white','lightyellow','yellowgreen','lightskyblue','magenta','lightgray','gold','hotpink']
+    pp = PdfPages('../corr_result/fig/auctionComposing')
+    for name in os.listdir('../corr_result/auction_detail/'):
+        auction = read_csv('../corr_result/auction_detail/'+name)
+        auction = auction.merge(item_list,on=['Item ID'],how='left')
+        
+        # get the mean quantity of each class 
+        grouped = auction.groupby(['Week Num','classname']).size()
+        grouped = grouped.reset_index().groupby(['classname'])[0].mean().reset_index()
+        grouped.columns=['classname','mean q']
 
+        fig, ax = plt.subplots()
+        plt.pie(grouped['mean q'].tolist(), labels=grouped['classname'].tolist(), colors=color_list,autopct='%1.1f%%', shadow=True, startangle=90)
+        plt.axis('equal')
+        
+        splitted_str = name.split('_')
+        realm = splitted_str[0]
+        fraction = splitted_str[1]
+        ax.set_title(realm+' '+fraction, loc='left')
+        ax.grid(True)
 
+        plt.draw()
+        plt.savefig(pp, format='pdf')
+    pp.close()
+
+        return grouped
+
+        
 
 

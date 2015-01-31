@@ -123,10 +123,10 @@ def getWorstAuction():
     pop_horde = pop_auctions.sort(columns=['horde'])
 
     # sort the auctions with poverty
-    #poverty_alliance = auctions.sort(columns=['alliance'])
-    #poverty_horde = auctions.sort(columns=['horde'])
+    poverty = poverty_auctions.groupby(['Realm','Fraction'])['Profit'].mean()
+    poverty = poverty.reset_index().sort(columns=['Profit'])
 
-    return pop_alliance[:5], pop_horde[:5]#, #poverty_alliance[:5], poverty_horde[:5]
+    return pop_alliance[:5], pop_horde[:5], poverty
 
 
     
