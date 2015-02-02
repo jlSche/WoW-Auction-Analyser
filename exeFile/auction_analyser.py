@@ -128,6 +128,18 @@ def getWorstAuction():
 
     return pop_alliance[:5], pop_horde[:5], poverty
 
+###################################################################################
+# 看除了armor外,是否還有某一class是每一個拍賣場都會有的
+###################################################################################
+def getEcoItemsComposing():
+    df = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
+    realms = read_csv('../sourceDir/target_realm.dat')
+    #realms = realms[realms['pvp']=='pvp'][:8]['Realm'].tolist() + realms[realms['pvp']=='pve']['Realm'].tolist()
+    
 
+    df = df.groupby(['classname','Realm','Fraction']).size().reset_index()
+    for itemclass in set(df['classname']):
+        print itemclass,'shows up in',len(df[df['classname']==itemclass])
+    
     
 

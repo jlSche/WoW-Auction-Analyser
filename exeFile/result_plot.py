@@ -1,3 +1,4 @@
+#-*- encoding=utf-8
 from pandas import *
 import numpy as np
 from mpl_toolkits.axes_grid1 import host_subplot
@@ -65,11 +66,11 @@ def plotCorrelation(name='darkspear', fraction='alliance', attr=['Avg Daily Post
 ##############################################################################################
 # Plot realms with same realm_type(pvp or pve) in a grapgh.
 # So this function will generate (fraction)*(type) 4 figures
+# the value will be the mean number of that cateogry
+# 在四大類伺服器中，各class的eco-item的composing ratio
 ##############################################################################################
-def plotTypeCluster():
-    high_corr_items = read_csv('../corr_result/HighCorr/allRealms.csv')
-    item_list.rename(columns={'Item_ID':'Item ID'}, inplace=True)
-    high_corr_items = high_corr_items.merge(item_list, how='left', on=['Item ID'])
+def plotTypeEcoItemsComposing():
+    high_corr_items = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
 
     # p: pvp, e: pve, a: alliance, h: horde
     p_a = high_corr_items[(high_corr_items['pvp']=='pvp') & (high_corr_items['Fraction']=='alliance')]
@@ -77,8 +78,23 @@ def plotTypeCluster():
     e_a = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='alliance')]
     e_h = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='horde')]
     
+    # pie plot
     pp = PdfPages('../corr_result/fig/cluster_type')
-    
+    colors = ['lime','lightcoral','white','lightyellow','yellowgreen','lightskyblue','magenta','slateblue','gold','hotpink','blueviolet']
+
+    for realm_type in [p_a,p_h,e_a,e_h]:
+        df = realm_type.groupby(['classname']).size().reset_index()
+        df.columns = ['classname','size']
+        df['size'] = df['size'] / len(set(realm_type['Realm']))
+
+        fig, ax = plt.subplots()
+        ax.pie(df['size'].tolist(), labels=df['classname'].tolist(), colors=colors, autopct='%1.1f%%', shadow=True, startangle=90)
+        ax.set_title(realm_type.iloc[0]['pvp']+' '+realm_type.iloc[0]['Fraction']+ ': Item Class Distribution.')
+        plt.draw()
+        plt.savefig(pp, format='pdf')
+    pp.close()
+    ''' 
+    #scatter plot
     for realm_type in [p_a, p_h, e_a, e_h]:
         quality_list = list(realm_type['qualityid'])
         class_list = list(realm_type['classid'])
@@ -133,6 +149,7 @@ def plotTypeCluster():
         plt.draw()
         plt.savefig(pp, format='pdf')
     pp.close()
+    '''
 
 ##############################################################################################
 # Plot realms with same fraction in a grapgh
@@ -211,6 +228,7 @@ def plotFractionCluster(fraction='alliance', attr=['Avg Daily Posted','Profit','
 ##############################################################################################
 # Plot  1. plottype = composing.    how are the high corr items composed in each realms
 #       2. plottype = sum.          the amount of each category in each realms
+# what is this function for????
 ##############################################################################################
 def plotEachRealmCluster(realmlist, plottype='composing'):
     high_corr_items = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
@@ -286,46 +304,8 @@ def plotEachRealmCluster(realmlist, plottype='composing'):
     pp.close()
 
 
-
 ##############################################################################################
-# Plot how the eco-items composed in 4 different economic systems
-##############################################################################################
-def plotEcoItemsComposing(category='classname'):
-    high_corr = read_csv('../corr_result/HighCorr/allRealms.csv')
-    items = read_csv('../sourceDir/itemlist.csv')
-    high_corr = high_corr.merge(items,left_on='Item ID',right_on='Item_ID',how='left')
-
-    p_a = high_corr[(high_corr['pvp']=='pvp') & (high_corr['Fraction']=='alliance')] 
-    p_h = high_corr[(high_corr['pvp']=='pvp') & (high_corr['Fraction']=='horde')] 
-    e_a = high_corr[(high_corr['pvp']=='pve') & (high_corr['Fraction']=='alliance')] 
-    e_h = high_corr[(high_corr['pvp']=='pve') & (high_corr['Fraction']=='horde')]
-
-
-    pp = PdfPages('../corr_result/fig/ecoItemsComposing')
-
-    for realm_type in [p_a, p_h, e_a, e_h]:
-        # sum each category
-        grouped = realm_type.groupby([category]).size()
-        category_list = list(grouped.index)
-        count_list =  grouped.values
-        color_list = ['lightcoral','white','lightyellow','yellowgreen','lightskyblue','magenta','lightgray','gold','hotpink']
-
-        # plot
-        fig, ax = plt.subplots()
-        plt.pie(count_list, labels=category_list, colors=color_list,autopct='%1.1f%%', shadow=True, startangle=90)
-        plt.axis('equal')
-        
-        ax.set_title(realm_type.iloc[0]['pvp']+' '+realm_type.iloc[0]['Fraction'], loc='left')
-
-        ax.grid(True)
-
-        plt.draw()
-        plt.savefig(pp, format='pdf')
-    pp.close()
-
-
-##############################################################################################
-# Plot how are the economic system formed in each auction
+# 看各伺服器的拍賣場，是由哪些商品所組成
 # not tested yet
 ##############################################################################################
 def plotAuctionComposing(category='classname'):
@@ -335,13 +315,17 @@ def plotAuctionComposing(category='classname'):
         auction = read_csv('../corr_result/auction_detail/'+name)
         auction = auction.merge(item_list,on=['Item ID'],how='left')
         
-        # get the mean quantity of each class 
-        grouped = auction.groupby(['Week Num','classname']).size()
-        grouped = grouped.reset_index().groupby(['classname'])[0].mean().reset_index()
-        grouped.columns=['classname','mean q']
+        # get the mean quantity of each class in each week
+        auction = auction.ix[:,['Week Num', 'Item ID', category, 'AH Quantity']]
+        grouped = auction.groupby(['Week Num',category])['AH Quantity'].sum().reset_index()
+        grouped.columns=['Week Num',category,'mean q']
+
+        # get the mean quantity of each class in 31 weeks
+        # we use mean() because all of the class appear 31 weeks
+        grouped = grouped.groupby([category])['mean q'].mean().reset_index()
 
         fig, ax = plt.subplots()
-        plt.pie(grouped['mean q'].tolist(), labels=grouped['classname'].tolist(), colors=color_list,autopct='%1.1f%%', shadow=True, startangle=90)
+        plt.pie(grouped['mean q'].tolist(), labels=grouped[category].tolist(), colors=color_list,autopct='%1.1f%%', shadow=True, startangle=90)
         plt.axis('equal')
         
         splitted_str = name.split('_')
@@ -354,7 +338,6 @@ def plotAuctionComposing(category='classname'):
         plt.savefig(pp, format='pdf')
     pp.close()
 
-        return grouped
 
         
 
