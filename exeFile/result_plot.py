@@ -3,14 +3,46 @@ from pandas import *
 import numpy as np
 from mpl_toolkits.axes_grid1 import host_subplot
 from matplotlib.backends.backend_pdf import PdfPages
+from DataHandling import convertDateFormat
 import mpl_toolkits.axisartist as AA
 import matplotlib.pyplot as plt
 import os
+import sys
 
 
 auction_list = read_csv('../sourceDir/target_realm.dat')
 auction_name = auction_list['Realm']
 item_list = read_csv('../sourceDir/itemlist.csv')
+
+###################################################################################
+# the profit trend of each auction
+###################################################################################
+def plotAuctionProfit():
+    alliance = read_csv('../corr_result/alliance_profit.csv')
+    horde = read_csv('../corr_result/horde_profit.csv')
+    realms = read_csv('../sourceDir/target_realm.dat')
+    realms = realms[realms['pvp']=='pvp'][:8]['Realm'].tolist() + realms[realms['pvp']=='pve'][:8]['Realm'].tolist()
+    pp = PdfPages('../corr_result/fig/auctionProfitTrend')
+
+    patch_dates = [convertDateFormat('06/27/2014')]#,convertDateFormat('10/14/2014')]
+    patch_dates = [Timestamp(x).week for x in patch_dates]
+    
+    for df in [alliance, horde]:
+        for name in realms:
+            auction = df[df['Realm']==name]
+            
+            fig, ax = plt.subplots()
+
+            ax.plot(auction['Week Num'].tolist(), auction['Profit'].tolist(), label='Proft Trend', marker='o')
+            ax.set_xlim([min(auction['Week Num'].tolist()), max(auction['Week Num'].tolist())])
+            ax.set_xticks(auction['Week Num'].tolist())
+            
+            ax.set_title(auction.iloc[0]['Realm']+' '+auction.iloc[0]['Fraction'])
+            ax.annotate('patch',xy=(patch_dates[0],int(auction[auction['Week Num']==patch_dates[0]]['Profit'])), xytext=(patch_dates[0],max(auction['Profit'])), arrowprops=dict(facecolor='black', shrink=0.5))
+
+            plt.draw()
+            plt.savefig(pp, format='pdf')
+    pp.close()
 
 def plotCorrelation(name='darkspear', fraction='alliance', attr=['Avg Daily Posted','Profit','AH MarketPrice']):
     high_corr_items = read_csv('../corr_result/HighCorr/'+fraction)
@@ -339,6 +371,21 @@ def plotAuctionComposing(category='classname'):
     pp.close()
 
 
+####################################################################################
+#   裝甲類別物品的資訊,包含需要等級, 物品等級, 附魔等級
+####################################################################################
+def plotArmorItemsInfo():
+    df = read_csv('../corr_result/HighCorr/armorDetail.dat')
+    df = df.fillna(0)
+    pp = PdfPages('../corr_result/fig/armorItemInfo')
+
+    for fig_type in ['Enchanting','Item Level','Required Level']:
+        fig, ax = plt.subplots()
+        ax.hist(df[fig_type].tolist(), bins=20)
+        ax.set_title(fig_type)
         
+        plt.draw()
+        plt.savefig(pp, format='pdf')
+    pp.close()
 
 

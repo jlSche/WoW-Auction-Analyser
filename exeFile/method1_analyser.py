@@ -1,3 +1,4 @@
+#-*-:encoding=utf-8
 from pandas import *
 import numpy as np
 import os
@@ -49,7 +50,7 @@ def getHighCorrItem(auction_list,threshold=0.7):
     itemlist = read_csv('../sourceDir/itemlist.csv')
     result_df = result_df.merge(itemlist, on=['Item ID'], how='left')
 
-    result_df.to_csv('../corr_result/HighCorr/ItemsDetail.csv', index=False)
+    result_df.to_csv('../corr_result/HighCorr/ItemsDetail75.csv', index=False)
 
 '''
     Find the intersection items in given auction_list.
@@ -108,10 +109,35 @@ def returnItemOccurence():
 
 
 
+def analysisArmor():
+    all_items = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
+    armor_detail = read_csv('../corr_result/HighCorr/armorDetail_new.dat')
 
+    armor = all_items[all_items['classname']=='Armor']
+    armor_detail = armor_detail.merge(armor, on=['Item ID'], how='inner').drop_duplicates().reset_index()
 
+    # items used for enchanting
+    enchanting = armor_detail[(armor_detail['Usage']=='飾品')|(armor_detail['Usage']=='手指')|(armor_detail['Usage']=='頸部')]
+    
+    # items used for style
+    style = armor_detail[(armor_detail['Usage']!='飾品')&(armor_detail['Usage']!='手指')&(armor_detail['Usage']!='頸部')]
+    
+    realms = set(style['Realm'].tolist())
+    
+    for realm in realms:
+        print realm,
+        df = style[style['Realm']==realm]
+        print '\nalliance:', len(df[df['Fraction']=='alliance']), '\t horde:', len(df[df['Fraction']=='horde'])
 
+    for realm in realms:
+        print realm,
+        df = enchanting[enchanting['Realm']==realm]
+        print '\nalliance:', len(df[df['Fraction']=='alliance']), '\t horde:', len(df[df['Fraction']=='horde'])
+    return  
+    subclass = armor.groupby('qualityname').size().reset_index()
+    return subclass
 
+    return armor
 
 
 

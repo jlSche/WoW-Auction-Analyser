@@ -1,40 +1,72 @@
+#-*- encoding=utf-8
 import urllib2
 import re
+import time
 from pandas import *
 from bs4 import BeautifulSoup
 
 #main_url = 'http://www.wowdb.tw/item-14159.html'
 main_url = 'http://www.wowdb.tw/item-'
 
-def getItemName(itemid):
+def getItemDetail(itemid):
     url = main_url + str(itemid) + '.html'
     response = urllib2.urlopen(url)
     html = response.read()
 
+    # find item name
     soup = BeautifulSoup(html)
     title = soup.find(id='itemtitle')
     title = str(title)
     pattern = r"(.+)>(.+)(</h1>)"
     match = re.match(pattern, title)
+
+    # find item level and item required level
+    iteminfo = soup.body.find(id='info')
+    target_numbers =  iteminfo.find_all(text=re.compile('(.+): (\d+)'))
+    
+    # find usage
+    usage = iteminfo.find('td')
+    usage = str(usage)
+    pattern = r"(.+)>(.+)(</td>)"
+    usage = re.match(pattern,usage)
+
+    item_level = int(target_numbers[0].split(' ')[1])
+    required_level = None
+    if len(target_numbers) == 2:
+        required_level = int(target_numbers[1].split(' ')[1])
+
+    # find enchanting
+    iteminfo = soup.body.find(id='itemdetailright')
+    enchanting = iteminfo.find_all(text=re.compile(': ([0-9])'))
+    if len(enchanting) != 0:
+        enchanting = unicode(enchanting[0]).encode('ascii','replace')
+        enchanting = enchanting.split(' ')[1]
+        enchanting = int(re.match(r'\d+',str(enchanting)).group())
+    else:
+        enchanting = None
+    
+    return match.group(2), usage.group(2), item_level, required_level, enchanting
+    '''
     if match:
         return match.group(2)
     else:
         return str(itemid) + ' does not match anything!'
+    '''
 
 def main():
-
-    df_allItems = read_csv('../corr_result/HighCorr/allRealms.csv')
-    item_detail = DataFrame(columns=['Realm','Fraction','Item','Corr'])
-    for idx in df_allItems.index:
-
-        realm = df_allItems.ix[idx]['Realm']
-        fraction = df_allItems.ix[idx]['Fraction']
-        item = getItemName(int(df_allItems.ix[idx]['Item ID']))
-        corr = df_allItems.ix[idx]['Corr']
+    df_allItems = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
+    armor = df_allItems[df_allItems['classname']=='Armor'].reset_index()
+    item_detail = DataFrame(columns=['Item ID','Item Name','Item Level','Required Level','Enchanting','Usage'])
+    for idx in range(500,544):
+        print int(armor.ix[idx]['Item ID']),
+        #return getItemDetail(int(armor.ix[idx]['Item ID']))
+        name, usage, item_level, required_level, enchanting = getItemDetail(int(armor.ix[idx]['Item ID']))
+        print name, usage, item_level, required_level, enchanting
         
-        new_item = DataFrame(([{'Realm': realm,'Fraction': fraction,'Item': item,'Corr': corr}]))
+        new_item = DataFrame(([{'Item ID':armor.ix[idx]['Item ID'], 'Item Name':name,'Item Level':item_level, 'Required Level':required_level, 'Enchanting':enchanting, 'Usage':usage}]))
         item_detail = item_detail.append(new_item, ignore_index=True)
-    item_detail.to_csv('../corr_result/HighCorr/highCorrItemName.dat',index=False)
+        time.sleep(3)
+    item_detail.to_csv('../corr_result/HighCorr/armorDetail6.dat',index=False)
         
 
 if __name__ == '__main__':
