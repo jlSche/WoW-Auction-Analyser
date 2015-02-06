@@ -260,7 +260,7 @@ def plotFractionCluster(fraction='alliance', attr=['Avg Daily Posted','Profit','
 ##############################################################################################
 # Plot  1. plottype = composing.    how are the high corr items composed in each realms
 #       2. plottype = sum.          the amount of each category in each realms
-# what is this function for????
+# 畫出每一拍賣場指標商品的組成
 ##############################################################################################
 def plotEachRealmCluster(realmlist, plottype='composing'):
     high_corr_items = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
@@ -335,6 +335,33 @@ def plotEachRealmCluster(realmlist, plottype='composing'):
 
     pp.close()
 
+##############################################################################################
+# 畫出四大類拍賣場指標商品的組成
+##############################################################################################
+def plotClusterComposing():
+    high_corr_items = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
+
+    # p: pvp, e: pve, a: alliance, h: horde
+    p_a = high_corr_items[(high_corr_items['pvp']=='pvp') & (high_corr_items['Fraction']=='alliance')]
+    p_h = high_corr_items[(high_corr_items['pvp']=='pvp') & (high_corr_items['Fraction']=='horde')]
+    e_a = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='alliance')]
+    e_h = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='horde')]
+    
+    pp = PdfPages('../corr_result/fig/cluster_composing')
+
+    for cluster in [p_a, p_h, e_a, e_h]:
+        quality_list = list(cluster['qualityid'])
+        class_list = list(cluster['classid'])
+
+        ##########################################################
+        df = cluster.ix[:,['classname','qualityname']]
+        df = df.groupby(['classname','qualityname'])
+        t = df.size().unstack().fillna(0)
+        t.plot(kind='barh',stacked=True,xlim=[0,200],title=cluster.iloc[0]['pvp']+' '+cluster.iloc[0]['Fraction'])
+        plt.draw()
+        plt.savefig(pp, format='pdf')
+
+    pp.close()
 
 ##############################################################################################
 # 看各伺服器的拍賣場，是由哪些商品所組成

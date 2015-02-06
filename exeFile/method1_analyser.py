@@ -139,7 +139,28 @@ def analysisArmor():
 
     return armor
 
-
+#   看四大類拍賣場,是否有各自有 同類型的指標商品
+def analysisCluster():
+    df = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
+    
+    #df = df.ix[:,['classname','Realm','Fraction','pvp']].drop_duplicates()
+    p = df[(((df['Realm']=='illidan')&(df['Fraction']=='alliance'))|((df['Realm']=='kelthuzad')&(df['Fraction']=='horde'))|((df['Realm']=='sargeras')&(df['Fraction']=='horde')))]
+    return p
+    #e = df[(df['pvp']=='pve')]
+    '''
+    p_a = df[(df['pvp']=='pvp') & (df['Fraction']=='alliance')]
+    p_h = df[(df['pvp']=='pvp') & (df['Fraction']=='horde')]
+    e_a = df[(df['pvp']=='pve') & (df['Fraction']=='alliance')]
+    e_h = df[(df['pvp']=='pve') & (df['Fraction']=='horde')]
+    '''
+    classlist = ['Consumable', 'Container', 'Weapon', 'Gem', 'Armor', 'Projectile', 'Trade Goods', 'Book', 'Money', 'Quest', 'Key', 'Junk', 'Glyph', 'Caged Pet']
+    #for cluster in [p_a, p_h, e_a, e_h]:
+    for cluster in [p]:
+        #print '\n',cluster.iloc[0]['pvp'], cluster.iloc[0]['Fraction']
+        print '\n',cluster.iloc[0]['pvp']
+        for category in classlist:
+            print category, len(cluster[cluster['classname']==category])
+            
 
 
 
