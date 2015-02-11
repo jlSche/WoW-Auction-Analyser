@@ -22,7 +22,7 @@ def plotAuctionProfit():
     horde = read_csv('../corr_result/horde_profit.csv')
     realms = read_csv('../sourceDir/target_realm.dat')
     realms = realms[realms['pvp']=='pvp'][:8]['Realm'].tolist() + realms[realms['pvp']=='pve'][:8]['Realm'].tolist()
-    pp = PdfPages('../corr_result/fig/auctionProfitTrend')
+    pp = PdfPages('../corr_result/fig/auctionProfitTrend.pdf')
 
     patch_dates = [convertDateFormat('06/27/2014')]#,convertDateFormat('10/14/2014')]
     patch_dates = [Timestamp(x).week for x in patch_dates]
@@ -57,7 +57,7 @@ def plotCorrelation(name='darkspear', fraction='alliance', attr=['Avg Daily Post
     auction_detail = auction_data.merge(target_auction, how='inner', on=['Week Num'])
     auction_detail = auction_detail.merge(high_corr_items, how='inner', on=['Item ID']) 
     
-    pp = PdfPages('../corr_result/fig/'+name+'-'+fraction)
+    pp = PdfPages('../corr_result/fig/'+name+'-'+fraction+'.pdf')
     print auction_detail
     '''
     for item in high_corr_items['Item ID']:
@@ -111,7 +111,7 @@ def plotTypeEcoItemsComposing():
     e_h = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='horde')]
     
     # pie plot
-    pp = PdfPages('../corr_result/fig/cluster_type')
+    pp = PdfPages('../corr_result/fig/cluster_type.pdf')
     colors = ['lime','lightcoral','white','lightyellow','yellowgreen','lightskyblue','magenta','slateblue','gold','hotpink','blueviolet']
 
     for realm_type in [p_a,p_h,e_a,e_h]:
@@ -232,7 +232,7 @@ def plotFractionCluster(fraction='alliance', attr=['Avg Daily Posted','Profit','
     '''
     ##########################################################
     #'''
-    pp = PdfPages('../corr_result/fig/cluster_'+fraction)
+    pp = PdfPages('../corr_result/fig/cluster_'+fraction+'.pdf')
     fig, ax = plt.subplots()
     sizes = np.pi * (3 * np.asarray(occurrence_list)) ** 2
     colors = np.random.rand(len(quality_list))
@@ -267,9 +267,9 @@ def plotEachRealmCluster(realmlist, plottype='composing'):
     
     pp = None
     if plottype == 'composing':
-        pp = PdfPages('../corr_result/fig/cluster_eachRealmComposing')
+        pp = PdfPages('../corr_result/fig/cluster_eachRealmComposing.pdf')
     elif plottype == 'sum':
-        pp = PdfPages('../corr_result/fig/cluster_eachRealmSum')
+        pp = PdfPages('../corr_result/fig/cluster_eachRealmSum.pdf')
 
     for fraction in ['alliance','horde']:
         for realm in realmlist:
@@ -347,7 +347,7 @@ def plotClusterComposing():
     e_a = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='alliance')]
     e_h = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='horde')]
     
-    pp = PdfPages('../corr_result/fig/cluster_composing')
+    pp = PdfPages('../corr_result/fig/cluster_composing.pdf')
 
     for cluster in [p_a, p_h, e_a, e_h]:
         quality_list = list(cluster['qualityid'])
@@ -369,7 +369,7 @@ def plotClusterComposing():
 ##############################################################################################
 def plotAuctionComposing(category='classname'):
     color_list = ['lightcoral','white','lightyellow','yellowgreen','lightskyblue','magenta','lightgray','gold','hotpink']
-    pp = PdfPages('../corr_result/fig/auctionComposing')
+    pp = PdfPages('../corr_result/fig/auctionComposing.pdf')
     for name in os.listdir('../corr_result/auction_detail/'):
         auction = read_csv('../corr_result/auction_detail/'+name)
         auction = auction.merge(item_list,on=['Item ID'],how='left')
@@ -404,7 +404,7 @@ def plotAuctionComposing(category='classname'):
 def plotArmorItemsInfo():
     df = read_csv('../corr_result/HighCorr/armorDetail.dat')
     df = df.fillna(0)
-    pp = PdfPages('../corr_result/fig/armorItemInfo')
+    pp = PdfPages('../corr_result/fig/armorItemInfo.pdf')
 
     for fig_type in ['Enchanting','Item Level','Required Level']:
         fig, ax = plt.subplots()
