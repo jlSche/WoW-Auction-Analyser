@@ -160,7 +160,17 @@ def analysisCluster():
         print '\n',cluster.iloc[0]['pvp']
         for category in classlist:
             print category, len(cluster[cluster['classname']==category])
-            
+
+###############################################################################        
+# get target realms
+###############################################################################        
+def getTargetRealms(return_columns='Realm'):
+    realms = read_csv('../sourceDir/target_realm.dat')
+    
+    realms = realms[realms['pvp']=='pvp'][:8]['Realm'].tolist() + realms[realms['pvp']=='pve'][:8]['Realm'].tolist()
+    return realms
+    #elif return_columns == 'all':
+    #    realms = realms[realms['pvp']=='pvp'][:8] + realms[realms['pvp']=='pve'][:8]
 
 
 
