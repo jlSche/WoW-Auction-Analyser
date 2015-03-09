@@ -22,7 +22,7 @@ def plotAuctionProfit():
     horde = read_csv('../corr_result/horde_profit.csv')
     realms = read_csv('../sourceDir/target_realm.dat')
     realms = realms[realms['pvp']=='pvp'][:8]['Realm'].tolist() + realms[realms['pvp']=='pve'][:8]['Realm'].tolist()
-    pp = PdfPages('../corr_result/fig/auctionProfitTrend.pdf')
+    #pp = PdfPages('../corr_result/fig/auctionProfitTrend.pdf')
 
     patch_dates = [convertDateFormat('06/27/2014')]#,convertDateFormat('10/14/2014')]
     patch_dates = [Timestamp(x).week for x in patch_dates]
@@ -38,11 +38,15 @@ def plotAuctionProfit():
             ax.set_xticks(auction['Week Num'].tolist())
             
             ax.set_title(auction.iloc[0]['Realm']+' '+auction.iloc[0]['Fraction'])
-            ax.annotate('patch',xy=(patch_dates[0],int(auction[auction['Week Num']==patch_dates[0]]['Profit'])), xytext=(patch_dates[0],max(auction['Profit'])), arrowprops=dict(facecolor='black', shrink=0.5))
+            ax.annotate('patch',xy=(patch_dates[0],int(auction[auction['Week Num']==patch_dates[0]]['Profit'])), xytext=(patch_dates[0],(max(auction['Profit'])+min(auction['Profit']))/2), arrowprops=dict(facecolor='black', shrink=0.05))
+
+            plt.xlabel('Week Number')
+            plt.ylabel('Market Value')
 
             plt.draw()
-            plt.savefig(pp, format='pdf')
-    pp.close()
+            #plt.savefig(pp, format='pdf')
+            plt.savefig('../corr_result/fig/auctionTrend/'+auction.iloc[0]['Realm']+' '+auction.iloc[0]['Fraction']+'.png', format='png')
+    #pp.close()
 
 def plotCorrelation(name='darkspear', fraction='alliance', attr=['Avg Daily Posted','Profit','AH MarketPrice']):
     high_corr_items = read_csv('../corr_result/HighCorr/'+fraction)
@@ -96,35 +100,51 @@ def plotCorrelation(name='darkspear', fraction='alliance', attr=['Avg Daily Post
 
 
 ##############################################################################################
-# Plot realms with same realm_type(pvp or pve) in a grapgh.
-# So this function will generate (fraction)*(type) 4 figures
-# the value will be the mean number of that cateogry
 # 在四大類伺服器中，各class的eco-item的composing ratio
+# 各物品類別的組成比例
 ##############################################################################################
-def plotTypeEcoItemsComposing():
+def plotEconItemsComposing(_divide=None):
     high_corr_items = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
 
-    # p: pvp, e: pve, a: alliance, h: horde
-    p_a = high_corr_items[(high_corr_items['pvp']=='pvp') & (high_corr_items['Fraction']=='alliance')]
-    p_h = high_corr_items[(high_corr_items['pvp']=='pvp') & (high_corr_items['Fraction']=='horde')]
-    e_a = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='alliance')]
-    e_h = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='horde')]
+    target_realms = []
+    if _divide == 4:
+        # p: pvp, e: pve, a: alliance, h: horde
+        p_a = high_corr_items[(high_corr_items['pvp']=='pvp') & (high_corr_items['Fraction']=='alliance')]
+        p_h = high_corr_items[(high_corr_items['pvp']=='pvp') & (high_corr_items['Fraction']=='horde')]
+        e_a = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='alliance')]
+        e_h = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='horde')]
+        target_realms.append(p_a)
+        target_realms.append(p_h)
+        target_realms.append(e_a)
+        target_realms.append(e_h)
+
+    elif _divide == 2:
+        pve = high_corr_items[(high_corr_items['pvp']=='pvp')]
+        pvp = high_corr_items[(high_corr_items['pvp']=='pve')]
+        target_realms.append(pvp)
+        target_realms.append(pve)
     
+    elif _divide == None:
+        target_realms.append(high_corr_items)
+
     # pie plot
-    pp = PdfPages('../corr_result/fig/cluster_type.pdf')
+    #pp = PdfPages('../corr_result/fig/ItemComposingPie.pdf')
     colors = ['lime','lightcoral','white','lightyellow','yellowgreen','lightskyblue','magenta','slateblue','gold','hotpink','blueviolet']
 
-    for realm_type in [p_a,p_h,e_a,e_h]:
+    for realm_type in target_realms:
         df = realm_type.groupby(['classname']).size().reset_index()
         df.columns = ['classname','size']
         df['size'] = df['size'] / len(set(realm_type['Realm']))
 
         fig, ax = plt.subplots()
         ax.pie(df['size'].tolist(), labels=df['classname'].tolist(), colors=colors, autopct='%1.1f%%', shadow=True, startangle=90)
-        ax.set_title(realm_type.iloc[0]['pvp']+' '+realm_type.iloc[0]['Fraction']+ ': Item Class Distribution.')
+        if _divide == None:
+            ax.set_title('Economic Items Composing')
+        else:
+            ax.set_title(realm_type.iloc[0]['pvp']+' '+realm_type.iloc[0]['Fraction']+ ': Item Class Distribution.')
         plt.draw()
-        plt.savefig(pp, format='pdf')
-    pp.close()
+        plt.savefig('../corr_result/fig/econItemsComposing.png', format='png')
+    #pp.close()
     ''' 
     #scatter plot
     for realm_type in [p_a, p_h, e_a, e_h]:
@@ -262,15 +282,16 @@ def plotFractionCluster(fraction='alliance', attr=['Avg Daily Posted','Profit','
 #       2. plottype = sum.          the amount of each category in each realms
 # 畫出每一拍賣場指標商品的組成
 ##############################################################################################
-def plotEachRealmCluster(realmlist, plottype='composing'):
+def plotEachRealmCluster(realmlist, plottype='sum'):
     high_corr_items = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
     
     pp = None
+    '''
     if plottype == 'composing':
         pp = PdfPages('../corr_result/fig/cluster_eachRealmComposing.pdf')
     elif plottype == 'sum':
         pp = PdfPages('../corr_result/fig/cluster_eachRealmSum.pdf')
-
+    '''
     for fraction in ['alliance','horde']:
         for realm in realmlist:
             temp_df = high_corr_items[(high_corr_items['Realm']==realm)&(high_corr_items['Fraction']==fraction)]
@@ -331,9 +352,9 @@ def plotEachRealmCluster(realmlist, plottype='composing'):
                 t = temp_df.size().unstack().fillna(0)
                 t.plot(kind='barh',stacked=True,xlim=[0,20],title=realm+' '+fraction)
                 plt.draw()
-                plt.savefig(pp, format='pdf')
+                plt.savefig('../corr_result/fig/ecoItemsTypeHist/'+realm+' '+fraction+'.png', format='png')
 
-    pp.close()
+    #pp.close()
 
 ##############################################################################################
 # 畫出四大類拍賣場指標商品的組成
@@ -404,15 +425,31 @@ def plotAuctionComposing(category='classname'):
 def plotArmorItemsInfo():
     df = read_csv('../corr_result/HighCorr/armorDetail.dat')
     df = df.fillna(0)
-    pp = PdfPages('../corr_result/fig/armorItemInfo.pdf')
+    #pp = PdfPages('../corr_result/fig/armorItemInfo.pdf')
 
     for fig_type in ['Enchanting','Item Level','Required Level']:
         fig, ax = plt.subplots()
         ax.hist(df[fig_type].tolist(), bins=20)
         ax.set_title(fig_type)
         
+        plt.xlabel('Level')
+        plt.ylabel('Item Quantity')
         plt.draw()
-        plt.savefig(pp, format='pdf')
-    pp.close()
+        plt.savefig('../corr_result/fig/armorDetail_'+fig_type+'.png', format='png')
+    #pp.close()
 
+####################################################################################
+# 各個經濟體內的econ items數量
+####################################################################################
+def plotEconItemQuant():
+    df = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
+    df = df.ix[:, ['Realm','Fraction']]
 
+    df = df.groupby(['Realm','Fraction']).size().reset_index()
+    df.rename(columns={0:'count'}, inplace=True)
+    data = df.pivot('Realm','Fraction','count')
+    
+    data.plot(kind='bar')
+    
+    plt.draw()
+    plt.savefig('../corr_result/fig/EconItemQuantity.png', format='png')
