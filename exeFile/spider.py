@@ -65,7 +65,7 @@ def getItemPrice(itemid):
     moneycopper = soup.findAll("span", {"class": "moneycopper"})
 
     price = 0
-    if len(moneygold) != None:
+    if len(moneygold) != 0:
         price += float(re.search(r'\d+',str(moneygold)).group())
     if len(moneysilver) != 0:
         price += float(re.search(r'\d+',str(moneysilver)).group()) / 100
@@ -77,8 +77,9 @@ def getItemPrice(itemid):
 
 def main():
     armor = read_csv('../corr_result/HighCorr/armorDetail_new.dat')
-
+    armor.drop_duplicates(inplace=True)
     armor['Item ID'] = armor['Item ID'].astype('int')
+    
     item_detail_price = DataFrame(columns=['Item ID','VPrice'])
 
     for idx in armor.index:
