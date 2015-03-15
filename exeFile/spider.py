@@ -53,10 +53,45 @@ def getItemDetail(itemid):
         return str(itemid) + ' does not match anything!'
     '''
 
+def getItemPrice(itemid):
+    url = main_url + str(itemid) + '.html'
+    response = urllib2.urlopen(url)
+    html = response.read()
+
+
+    soup = BeautifulSoup(html)
+    moneygold = soup.findAll("span", {"class": "moneygold"})
+    moneysilver = soup.findAll("span", {"class": "moneysilver"})
+    moneycopper = soup.findAll("span", {"class": "moneycopper"})
+
+    price = 0
+    if len(moneygold) != None:
+        price += float(re.search(r'\d+',str(moneygold)).group())
+    if len(moneysilver) != 0:
+        price += float(re.search(r'\d+',str(moneysilver)).group()) / 100
+    if len(moneycopper) != 0:
+        price += float(re.search(r'\d+',str(moneysilver)).group()) / 10000
+
+    return price
+
+
 def main():
-    df_allItems = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
-    armor = df_allItems[df_allItems['classname']=='Armor'].reset_index()
-    item_detail = DataFrame(columns=['Item ID','Item Name','Item Level','Required Level','Enchanting','Usage'])
+    armor = read_csv('../corr_result/HighCorr/armorDetail_new.dat')
+
+    armor['Item ID'] = armor['Item ID'].astype('int')
+    item_detail_price = DataFrame(columns=['Item ID','VPrice'])
+
+    for idx in armor.index:
+        print 'now retrieving item', armor.ix[idx]['Item ID']
+        vendor_price = getItemPrice(armor.ix[idx]['Item ID'])
+        new_item = DataFrame(([{'Item ID':armor.ix[idx]['Item ID'], 'VPrice': vendor_price}]))
+        item_detail_price = item_detail_price.append(new_item, ignore_index=True)
+        time.sleep(3)
+
+    item_detail_price.to_csv('../corr_result/HighCorr/armorDetail_withPrice.csv',index=False)
+    
+    '''
+    #item_detail = DataFrame(columns=['Item ID','Item Name','Item Level','Required Level','Enchanting','Usage'])
     for idx in range(500,544):
         print int(armor.ix[idx]['Item ID']),
         #return getItemDetail(int(armor.ix[idx]['Item ID']))
@@ -67,7 +102,7 @@ def main():
         item_detail = item_detail.append(new_item, ignore_index=True)
         time.sleep(3)
     item_detail.to_csv('../corr_result/HighCorr/armorDetail6.dat',index=False)
-        
+    ''' 
 
 if __name__ == '__main__':
     main()
