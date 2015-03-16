@@ -141,5 +141,42 @@ def getEcoItemsComposing():
     for itemclass in set(df['classname']):
         print itemclass,'shows up in',len(df[df['classname']==itemclass])
     
+####################################################################################
+# 檢驗經濟體人口與 裝甲類型指標商品、指標商品 數量 的相關性
+###################################################################################   
+def getCorr():
+    all_df = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
+    armor_df = read_csv('../corr_result/HighCorr/03pricedata.csv')
+
+    t_all = all_df.groupby(['Realm','Fraction']).size()
+    t_armor = armor_df.groupby(['Realm','Fraction']).size()
+
+    t_all = t_all.reset_index()
+    t_armor = t_armor.reset_index()
     
+    t_all.rename(columns={0: 'all'}, inplace=True)
+    t_armor.rename(columns={0: 'armor'}, inplace=True)
+
+    t_df = t_armor.merge(t_all,how='outer',on=['Realm','Fraction'])
+
+    pop = armor_df.ix[:,['Realm','Fraction','alliance','horde']].drop_duplicates()
+    t_df = t_df.merge(pop)
+
+    pop_list = []
+    for i, row in t_df.iterrows():
+        if row['Fraction'] == 'alliance':
+            pop_list.append(row['alliance'])
+        else:
+            pop_list.append(row['horde'])
+
+    t_df['pop'] = pop_list
+    t_df.drop(['alliance','horde'], axis=1, inplace=True)
+    t_df.loc[len(t_df)+1] = ['illidan','alliance',0,1,8654]
+    t_df.loc[len(t_df)+1] = ['kelthuzad','horde',0,1,12691]
+    t_df.loc[len(t_df)+1] = ['sargeras','horde',0,10,16191]
+
+    corr1 = np.corrcoef(x=t_df['pop'], y=t_df['armor'])
+    corr2= np.corrcoef(x=t_df['pop'], y=t_df['all'])
+    print corr1[0][1],corr2[0][1]
+
 

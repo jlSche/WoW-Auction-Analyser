@@ -357,20 +357,15 @@ def plotEachRealmCluster(realmlist, plottype='sum'):
     #pp.close()
 
 ##############################################################################################
-# 畫出四大類拍賣場指標商品的組成
+# 畫出PvP, PvE 拍賣場指標商品的組成
 ##############################################################################################
 def plotClusterComposing():
     high_corr_items = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
 
-    # p: pvp, e: pve, a: alliance, h: horde
-    p_a = high_corr_items[(high_corr_items['pvp']=='pvp') & (high_corr_items['Fraction']=='alliance')]
-    p_h = high_corr_items[(high_corr_items['pvp']=='pvp') & (high_corr_items['Fraction']=='horde')]
-    e_a = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='alliance')]
-    e_h = high_corr_items[(high_corr_items['pvp']=='pve') & (high_corr_items['Fraction']=='horde')]
-    
-    pp = PdfPages('../corr_result/fig/cluster_composing.pdf')
+    pvp = high_corr_items[(high_corr_items['pvp']=='pvp')]
+    pve = high_corr_items[(high_corr_items['pvp']=='pve')]
 
-    for cluster in [p_a, p_h, e_a, e_h]:
+    for cluster in [pvp,pve]:
         quality_list = list(cluster['qualityid'])
         class_list = list(cluster['classid'])
 
@@ -378,11 +373,11 @@ def plotClusterComposing():
         df = cluster.ix[:,['classname','qualityname']]
         df = df.groupby(['classname','qualityname'])
         t = df.size().unstack().fillna(0)
-        t.plot(kind='barh',stacked=True,xlim=[0,200],title=cluster.iloc[0]['pvp']+' '+cluster.iloc[0]['Fraction'])
+        realm_type = cluster.iloc[0]['pvp']
+        t.plot(kind='barh',stacked=True,xlim=[0,350],title=realm_type)
         plt.draw()
-        plt.savefig(pp, format='pdf')
+        plt.savefig('../corr_result/fig/RealmTypeComposing_'+realm_type+'.png', format='png')
 
-    pp.close()
 
 ##############################################################################################
 # 看各伺服器的拍賣場，是由哪些商品所組成

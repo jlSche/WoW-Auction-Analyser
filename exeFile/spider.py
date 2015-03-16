@@ -6,7 +6,8 @@ from pandas import *
 from bs4 import BeautifulSoup
 
 #main_url = 'http://www.wowdb.tw/item-14159.html'
-main_url = 'http://www.wowdb.tw/item-'
+#main_url = 'http://www.wowdb.tw/item-'
+main_url = 'http://www.wowhead.com/item='
 
 def getItemDetail(itemid):
     url = main_url + str(itemid) + '.html'
@@ -70,7 +71,7 @@ def getItemPrice(itemid):
     if len(moneysilver) != 0:
         price += float(re.search(r'\d+',str(moneysilver)).group()) / 100
     if len(moneycopper) != 0:
-        price += float(re.search(r'\d+',str(moneysilver)).group()) / 10000
+        price += float(re.search(r'\d+',str(moneycopper)).group()) / 10000
 
     return price
 
@@ -78,11 +79,12 @@ def getItemPrice(itemid):
 def main():
     armor = read_csv('../corr_result/HighCorr/armorDetail_new.dat')
     armor.drop_duplicates(inplace=True)
+    armor.reset_index(inplace=True)
     armor['Item ID'] = armor['Item ID'].astype('int')
-    
+
     item_detail_price = DataFrame(columns=['Item ID','VPrice'])
 
-    for idx in armor.index:
+    for idx in range(301,527):
         print 'now retrieving item', armor.ix[idx]['Item ID']
         vendor_price = getItemPrice(armor.ix[idx]['Item ID'])
         new_item = DataFrame(([{'Item ID':armor.ix[idx]['Item ID'], 'VPrice': vendor_price}]))
