@@ -448,3 +448,23 @@ def plotEconItemQuant():
     
     plt.draw()
     plt.savefig('../corr_result/fig/EconItemQuantity.png', format='png')
+
+def plotPopulation():
+    df = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
+    df = df[df['pvp']=='pvp']
+    df = df.ix[:, ['Realm','Fraction','alliance','horde']]
+    df.drop_duplicates(inplace=True)
+
+    df['pop'] = df.apply(getPop, axis=1)
+    #df['pop'] = np.log10(df['pop'])
+    df = df.pivot('Realm','Fraction','pop')
+    df.plot(kind='bar')
+    plt.title('Population in PvP realms.')
+    plt.draw()
+    plt.savefig('../corr_result/fig/pvpPopulation.png', format='png')
+    
+def getPop(row):
+    if row['Fraction'] == 'alliance':
+        return row['alliance']
+    else:
+        return row['horde']
