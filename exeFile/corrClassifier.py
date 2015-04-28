@@ -21,7 +21,7 @@ plotting_list = [plus_class, plus_quality, minus_class,  minus_quality]
 for idx in range(0, len(plotting_list)):
 	plt.subplot(2, 2, idx+1)
 	plt.title(idx)
-	plt.xlim([0,300])
+	plt.xlim([0,300	])
 	plotting_list[idx].plot(kind='barh')
 
 	#plt.draw()
