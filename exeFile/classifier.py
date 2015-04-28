@@ -90,7 +90,7 @@ def generateDF():
 	return df
 
 
-def classifyUnknownCategory():
+def classifyUnknownCategory(linkage_method='average'):
 	unknown = classifyEconItems()
 	o_df = read_csv('../corr_result/HighCorr/03pricedata.csv')
 
@@ -141,7 +141,7 @@ def classifyUnknownCategory():
 	mapper = DataFrameMapper([([df.columns], sklearn.preprocessing.StandardScaler())])
 	df = sklearn.preprocessing.normalize(df)
 
-	model = AgglomerativeClustering(n_clusters=2, linkage='average')
+	model = AgglomerativeClustering(n_clusters=2, linkage=linkage_method)
 	model.fit(df)
 	result = model.labels_.tolist()
 	#plt.scatter(df[:, 0], df[:, 1], c=model.labels_)
@@ -150,20 +150,25 @@ def classifyUnknownCategory():
 	#'''
 
 	copy_df['category'] = result
+
+	return copy_df
+
 	copy_df['diff'] = np.log10(copy_df['diff'])
 	copy_df['PriceMean'] = np.log10(copy_df['PriceMean'])
+	
 	#copy_df = copy_df.ix[:,['PriceMean','diff','category']]
 	my_scatter = plt.axes([0.1,0.1,0.65,0.65])
 	my_scatter.scatter(x=copy_df['diff'], y=copy_df['PriceMean'], c=copy_df['category'])
 
-	plt.title('Enchanting and Styling')
+	plt.title('Linkage Criteria: ' + linkage_method)
 	plt.xlabel('log( Auction Price / Vendor Price )')
 	plt.ylabel('log( Auction Price )')
 	#plt.axvline(x = 2.604, linewidth=1, color='r')
 	#plt.axhline(y = 2.7466, linewidth=1, color='r')
 	plt.legend(loc='best')
+	#plt.show()
 	plt.draw()
-	plt.savefig('../corr_result/fig/unknownCategory.png', format='png')
+	plt.savefig('../corr_result/fig/unknownCategory_'+linkage_method+'.png', format='png')
 	return copy_df
 	#print len(df[(df['diff']>=2.604) & (df['PriceMean']>=2.7466)])
 	#'''

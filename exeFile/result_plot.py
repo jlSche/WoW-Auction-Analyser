@@ -131,6 +131,8 @@ def plotEconItemsComposing(_divide=None):
     #pp = PdfPages('../corr_result/fig/ItemComposingPie.pdf')
     colors = ['lime','lightcoral','white','lightyellow','yellowgreen','lightskyblue','magenta','slateblue','gold','hotpink','blueviolet']
 
+    return target_realms
+    
     for realm_type in target_realms:
         df = realm_type.groupby(['classname']).size().reset_index()
         df.columns = ['classname','size']
@@ -359,13 +361,19 @@ def plotEachRealmCluster(realmlist, plottype='sum'):
 ##############################################################################################
 # 畫出PvP, PvE 拍賣場指標商品的組成
 ##############################################################################################
-def plotClusterComposing():
+def plotClusterComposing(cluster_type=None):
     high_corr_items = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
+    cluster_list = None
+    
+    if cluster_type == None:
+        cluster_list = [high_corr_items]
+        filename = 'econItemsComposingDetail.png'
+    else:
+        pvp = high_corr_items[(high_corr_items['pvp']=='pvp')]
+        pve = high_corr_items[(high_corr_items['pvp']=='pve')]
+        cluster_list = [pvp, pve]
 
-    pvp = high_corr_items[(high_corr_items['pvp']=='pvp')]
-    pve = high_corr_items[(high_corr_items['pvp']=='pve')]
-
-    for cluster in [pvp,pve]:
+    for cluster in cluster_list:
         quality_list = list(cluster['qualityid'])
         class_list = list(cluster['classid'])
 
@@ -373,10 +381,19 @@ def plotClusterComposing():
         df = cluster.ix[:,['classname','qualityname']]
         df = df.groupby(['classname','qualityname'])
         t = df.size().unstack().fillna(0)
+
         realm_type = cluster.iloc[0]['pvp']
-        t.plot(kind='barh',stacked=True,xlim=[0,350],title=realm_type)
+        if cluster_type == None:
+            t.plot(kind='barh',stacked=True,xlim=[0,550],title='Detail Of Econ Items Composing')
+        else: 
+            t.plot(kind='barh',stacked=True,xlim=[0,350],title=realm_type)
+        
         plt.draw()
-        plt.savefig('../corr_result/fig/RealmTypeComposing_'+realm_type+'.png', format='png')
+
+        if cluster_type == None:
+            plt.savefig('../corr_result/fig/'+filename, format='png')
+        else:
+            plt.savefig('../corr_result/fig/econItemsComposingDetail_'+realm_type+'.png', format='png')
 
 
 ##############################################################################################
@@ -424,13 +441,15 @@ def plotArmorItemsInfo():
 
     for fig_type in ['Enchanting','Item Level','Required Level']:
         fig, ax = plt.subplots()
-        ax.hist(df[fig_type].tolist(), bins=20)
+        ax.hist(df[fig_type].tolist(), bins=20, histtype='stepfilled', color='lightyellow', cumulative=True)
         ax.set_title(fig_type)
         
         plt.xlabel('Level')
-        plt.ylabel('Item Quantity')
+        plt.ylabel('Count')
+        plt.title('Cumulative Item Count of ' + fig_type)
         plt.draw()
-        plt.savefig('../corr_result/fig/armorDetail_'+fig_type+'.png', format='png')
+        plt.savefig('../corr_result/fig/armorItemDetail/armorDetailStep_'+fig_type+'.png', format='png')
+        print 'plotting' + fig_type
     #pp.close()
 
 ####################################################################################
@@ -468,3 +487,47 @@ def getPop(row):
         return row['alliance']
     else:
         return row['horde']
+
+####################################################################################
+# 看每一個類別的的指標性商品 在幾個經濟體理有出現
+####################################################################################
+
+def plotCategoryCount():
+    df = read_csv('../corr_result/HighCorr/ItemsDetail.csv')   
+    df = df.groupby(['classname','Realm','Fraction']).size().reset_index()
+
+    df = df.groupby(['classname']).count()
+
+    classname = list(df.index)
+    df['Auction'] = df['Realm']
+
+    df = df.ix[:, ['Auction']] 
+
+    count_list = list(df['Auction'])
+    x_pos = list(range(len(classname)))
+
+    rects = plt.bar(x_pos, count_list, align='center', alpha=0.5)
+
+    def autolabel(rects):
+        for ii,rect in enumerate(rects):
+            height = rect.get_height()
+            plt.text(rect.get_x()+rect.get_width()/2., 1.02*height, '%s'% (count_list[ii]), ha='center', va='bottom')
+    autolabel(rects)
+    
+    plt.ylim([0, 33])
+    plt.xticks(x_pos, classname, rotation=30)
+    plt.xlabel('Item Category')
+    plt.ylabel('Economies Count')
+    plt.title('Economies Count in Each Item Category')
+
+    plt.draw()
+    plt.savefig('../corr_result/fig/categoryCount.png', format='png')
+
+
+
+
+
+
+
+
+

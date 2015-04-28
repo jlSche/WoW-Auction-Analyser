@@ -148,7 +148,7 @@ def getCorr():
     all_df = read_csv('../corr_result/HighCorr/ItemsDetail.csv')
     armor_df = read_csv('../corr_result/HighCorr/03pricedata.csv')
 
-    t_all = all_df.groupby(['Realm','Fraction']).size()
+    t_all = all_df.groupby(['Realm','Fraction']).size()         # need population data
     t_armor = armor_df.groupby(['Realm','Fraction']).size()
 
     t_all = t_all.reset_index()
@@ -176,7 +176,7 @@ def getCorr():
     t_df.loc[len(t_df)+1] = ['sargeras','horde',0,10,16191]
 
     corr1 = np.corrcoef(x=t_df['pop'], y=t_df['armor'])
-    corr2= np.corrcoef(x=t_df['pop'], y=t_df['all'])
+    corr2 = np.corrcoef(x=t_df['pop'], y=t_df['all'])
     print corr1[0][1],corr2[0][1]
 
 
