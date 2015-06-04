@@ -1,0 +1,1 @@
+realm_list = ['area-52', 'bleeding-hollow', 'darkspear','frostmourne','illidan','kelthuzad','kiljaeden','lightbringer','moon-guard','proudmoore','sargeras','stormrage','thrall','tichondrius','wyrmrest-accord','zuljin']
