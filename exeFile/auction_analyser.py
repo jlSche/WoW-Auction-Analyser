@@ -1,5 +1,6 @@
 #-*- coding=utf-8
 from pandas import *
+import scipy.stats as stats
 import os
 
 def getAuctionComposing():
@@ -175,8 +176,21 @@ def getCorr():
     t_df.loc[len(t_df)+1] = ['kelthuzad','horde',0,1,12691]
     t_df.loc[len(t_df)+1] = ['sargeras','horde',0,10,16191]
 
+    '''
     corr1 = np.corrcoef(x=t_df['pop'], y=t_df['armor'])
     corr2 = np.corrcoef(x=t_df['pop'], y=t_df['all'])
     print corr1[0][1],corr2[0][1]
+    '''
+
+    corr_armor, pval_armor = stats.spearmanr(t_df['pop'], t_df['armor'])
+    corr_all, pval_all = stats.spearmanr(t_df['pop'], t_df['all'])
+    corr_test, pval_test = stats.spearmanr(t_df['armor'], t_df['all'])
+
+
+    print 'Correlation between Armor Items and Population is', corr_armor, 'with', pval_armor, 'significance'
+    print 'Correlation between All Items and Population is', corr_all, 'with', pval_all, 'significance'
+    print 'Correlation between All Items and Armor Items is', corr_test, 'with', pval_test, 'significance'
+
+    return t_df
 
 

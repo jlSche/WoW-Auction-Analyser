@@ -49,7 +49,7 @@ for df in all_df:
 
 
 passed = corr_result_df[corr_result_df['p Val']<0.05]
-corr_result_df.to_csv('../corr_result/corrResult_0604.csv', index=False)
+#corr_result_df.to_csv('../corr_result/corrResult_0604.csv', index=False)
 
 print len(passed), '/', len(corr_result_df), 'passed the Correlation Test.'
 

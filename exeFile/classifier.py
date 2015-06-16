@@ -10,6 +10,7 @@ import sklearn.preprocessing
 import sklearn.decomposition
 import math
 from DataPreprocess import removeOutliers
+from matplotlib.markers import MarkerStyle
 
 armor_econ_items = '../corr_result/HighCorr/armorDetail_new.dat'
 armor_items_price = '../corr_result/HighCorr/armorDetail_withPriceNew.csv'
@@ -151,14 +152,24 @@ def classifyUnknownCategory(linkage_method='average'):
 
 	copy_df['category'] = result
 
-	return copy_df
+	#return copy_df
 
 	copy_df['diff'] = np.log10(copy_df['diff'])
 	copy_df['PriceMean'] = np.log10(copy_df['PriceMean'])
 	
 	#copy_df = copy_df.ix[:,['PriceMean','diff','category']]
 	my_scatter = plt.axes([0.1,0.1,0.65,0.65])
-	my_scatter.scatter(x=copy_df['diff'], y=copy_df['PriceMean'], c=copy_df['category'])
+	#my_scatter.scatter(x=copy_df['diff'], y=copy_df['PriceMean'], c=copy_df['category'])
+	color = ['indianred', 'dodgerblue']
+	style = [u'D', u's']
+
+	style_map = [style[x] for x in copy_df['category']]
+	color_map = [color[x] for x in copy_df['category']]
+
+	# 2 different way to plot
+	#my_scatter.scatter(x=copy_df['diff'], y=copy_df['PriceMean'], c=[color_map[x] for x in copy_df['category']])
+	for x, y, color, style in zip(copy_df['diff'], copy_df['PriceMean'], color_map, style_map):
+		plt.scatter(x, y, c=color, marker=style, s=40)
 
 	plt.title('Linkage Criteria: ' + linkage_method)
 	plt.xlabel('log( Auction Price / Vendor Price )')
@@ -169,7 +180,7 @@ def classifyUnknownCategory(linkage_method='average'):
 	#plt.show()
 	plt.draw()
 	plt.savefig('../corr_result/fig/unknownCategory_'+linkage_method+'.png', format='png')
-	return copy_df
+	return style_map
 	#print len(df[(df['diff']>=2.604) & (df['PriceMean']>=2.7466)])
 	#'''
 

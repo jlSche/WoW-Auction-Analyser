@@ -104,3 +104,25 @@ def method1(auction_list, date_start='2014-03-13', date_end='2014-10-12'):
     
 
 
+def p_corr(df1, df2):
+    """
+    Computes Pearson correlation and its significance (using a t
+    distribution) on a pandas.DataFrame.
+ 
+    Ignores null values when computing significance. Based on
+    http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient#Testing_using_Student.27s_t-distribution
+ 
+    Args:
+        df1 (pandas.DataFrame): one dataset
+        df2 (pandas.DataFrame): another dataset
+ 
+    Returns:
+        corr (float): correlation between the two datasets
+        t (float): an associated t-value
+        p (float): one-tailed p-value that the two datasets differ
+    """
+    corr = df1.corr(df2)
+    N = np.sum(df1.notnull())
+    t = corr*np.sqrt((N-2)/(1-corr**2))
+    p = 1-scipy.stats.t.cdf(abs(t),N-2)  # one-tailed
+    return corr, t, p
